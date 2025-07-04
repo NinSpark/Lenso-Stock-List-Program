@@ -1,1 +1,57 @@
-<p>home nigger!</p>
+<div class="body">
+    <h2>Full Stock List</h2>
+
+    <div class="checkbox-options">
+        <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" (change)="updateDisplayedColumns()">Show cost</mat-checkbox>
+        <mat-checkbox class="show-set-checkbox" [(ngModel)]="isSet" (change)="changeUOM()">Show set</mat-checkbox>
+    </div>
+
+    <div id="main-table-div">
+        <table mat-table [dataSource]="fullItemList" matSort class="mat-elevation-z8" style="width: 100%;">
+
+            <!-- Item Code Column -->
+            <ng-container matColumnDef="ItemCode">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by code">Item Code
+                </th>
+                <td mat-cell *matCellDef="let item">{{ item.ItemCode }}</td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="Description">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">Description
+                </th>
+                <td mat-cell *matCellDef="let item">{{ item.Description }}</td>
+            </ng-container>
+
+            <!-- Stock Qty Column -->
+            <ng-container matColumnDef="StockQty">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by qty">Qty</th>
+                <td mat-cell *matCellDef="let item">
+                    <div *ngIf="item.StockQty % 1 != 0 && isSet;else default_qty">
+                        {{ roundDown(item.StockQty) }} ({{ item.StockQty * 4 }} PCS)
+                    </div>
+                    <ng-template #default_qty>{{ item.StockQty }}</ng-template>
+                </td>
+            </ng-container>
+
+            <!-- Cost per PCS -->
+            <ng-container matColumnDef="Cost">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by cost">Cost</th>
+                <td mat-cell *matCellDef="let item">{{ item.Cost | number:'1.2-2' }}</td>
+            </ng-container>
+
+            <!-- Table Header + Body -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </div>
+
+    <div *ngIf="fullStockList.length === 0">
+        No stock entries available.
+    </div>
+
+    <!-- Spinner (optional) -->
+    <div *ngIf="isLoading" style="margin-top: 16px;">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
+</div>

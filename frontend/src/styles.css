@@ -1,1 +1,44 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+    --primary-color: #000000;
+    --accent-color: #a01b1f;
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --mdc-theme-primary: #000000;
+    --mdc-theme-secondary: #a01b1f;
+    --mdc-theme-on-primary: #ffffff;
+    --mdc-theme-on-secondary: #ffffff;
+}
+
+html,
+body {
+    height: 100%;
+    --mat-sys-primary: #a01b1f;
+    --mat-sys-surface-tint: #a01b1f;
+    --mat-sys-primary-container: #ffd7d7;
+    --mat-sys-primary-fixed: #ffd7d7;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.mat-mdc-raised-button {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+
+.mat-mdc-raised-button.mat-accent {
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
+}
+
+html .mat-accent {
+    --mat-progress-spinner-active-indicator-color: var(--accent-color) !important;
+}
+
+.mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background, .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+    border-color: #a01b1f !important;
+    background-color: #a01b1f !important;
+}

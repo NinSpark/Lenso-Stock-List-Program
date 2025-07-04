@@ -80,6 +80,39 @@ async function testDBConnection3() {
     .catch(err => console.error('❌ Error connecting to PostgreSQL:', err));
 }
 
+// Fetch item list
+app.get('/api/item', async (req, res) => {
+    try {
+        const dbType = req.query.db; // 'kai_shen' or 'lenso'
+        const pool = await getDBPool(dbType);
+        const request = pool.request();
+        const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
+
+        const result = await request.query(query);
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error fetching stock:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// Fetch stock list
+app.get('/api/stock', async (req, res) => {
+    try {
+        const dbType = req.query.db; // 'kai_shen' or 'lenso'
+        const pool = await getDBPool(dbType);
+        const request = pool.request();
+        const query = `SELECT * FROM dbo.StockDTL`;
+
+        const result = await request.query(query);
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error fetching stock:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+
 // Start Server
 app.listen(port, async () => {
   console.log(`🚀 Server running at http://localhost:${port}`);

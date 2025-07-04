@@ -66,3 +66,12 @@ if (isMainModule(import.meta.url)) {
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
  */
 export const reqHandler = createNodeRequestHandler(app);
+
+if (typeof window === 'undefined') {
+  // const originalLog = console.log;
+  console.log = (...args: any[]) => {
+    // Filter only unwanted logs or disable entirely
+    if (!args[0]?.toString().includes('HomeComponent')) return;
+    // originalLog('[SERVER]', ...args); // optional: prefix logs
+  };
+}

@@ -1,0 +1,22 @@
+.text-align-end {
+    text-align: end;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: white;
+}
+
+.body {
+    padding: 10px;
+}
+
+.checkbox-options {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+}
