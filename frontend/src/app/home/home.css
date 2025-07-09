@@ -34,3 +34,11 @@ table {
 .show-cost-checkbox {
     display: none;
 }
+
+.loading-container {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+}

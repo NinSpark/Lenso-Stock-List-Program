@@ -34,7 +34,7 @@ export class Home implements OnInit {
 
   fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
-  displayedColumns: string[] = ['ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty', 'Cost'];
+  displayedColumns: string[] = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty', 'Cost'];
   isSet: boolean = false;
   showCost: boolean = false;
   showPrice: boolean = false;
@@ -44,6 +44,9 @@ export class Home implements OnInit {
   selectedPCD = new FormControl<string[]>([]);
   selectedType: string = "all-type";
   selectedSeries: string[] = [];
+
+  imageUrlMap: { [itemCode: string]: string } = {};
+  loadingMap: { [itemCode: string]: boolean } = {};
 
   sizeList: any[] = [
     { name: '15"', value: '15' },
@@ -100,7 +103,7 @@ export class Home implements OnInit {
   }
 
   updateDisplayedColumns() {
-    this.displayedColumns = ['ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];
+    this.displayedColumns = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];
     if (this.showCost) {
       this.displayedColumns.push('Cost');
     }
@@ -113,6 +116,7 @@ export class Home implements OnInit {
     try {
       this.stockService.getItemList(this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
+        this.generateBlobUrls(data);
 
         this.fetchPrices();
       });
@@ -245,6 +249,7 @@ export class Home implements OnInit {
     try {
       this.stockService.getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
+        this.generateBlobUrls(data);
 
         this.fetchPrices();
       });
@@ -253,5 +258,25 @@ export class Home implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  generateBlobUrls(data: LensoItem[]) {
+    this.imageUrlMap = {};
+    data.forEach(item => {
+      if (item.Image) {
+        const byteArray = new Uint8Array(item.Image.data);
+        const blob = new Blob([byteArray], { type: 'image/jpeg' });
+        const url = URL.createObjectURL(blob);
+        this.imageUrlMap[item.ItemCode] = url;
+      }
+    });
+  }
+
+  onImageLoad(itemCode: string) {
+    this.loadingMap[itemCode] = false;
+  }
+
+  onImageError(itemCode: string) {
+    this.loadingMap[itemCode] = false;
   }
 }

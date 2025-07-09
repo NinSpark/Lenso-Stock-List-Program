@@ -56,10 +56,29 @@
         <mat-checkbox class="show-oos-checkbox" [(ngModel)]="showOOS">Show out of stock</mat-checkbox>
     </div>
 
-    <div id="main-table-div">
+    <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoading" id="main-table-div">
         <div *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
-        <div *ngIf="!showOOS">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
+        <div *ngIf="!showOOS">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
+            item(s) are unavailable.</div>
         <table mat-table [dataSource]="fullItemList" matSort class="mat-elevation-z8" style="width: 100%;">
+
+            <!-- Image Column -->
+            <ng-container matColumnDef="Image">
+                <th mat-header-cell *matHeaderCellDef>Image</th>
+                <td mat-cell *matCellDef="let item">
+                    <div style="display: flex; justify-content: center; align-items: center;">
+                        <mat-spinner *ngIf="loadingMap[item.ItemCode]" diameter="90"
+                            style="margin: 10px 0;"></mat-spinner>
+                        <img *ngIf="imageUrlMap[item.ItemCode]" [src]="imageUrlMap[item.ItemCode]" width="200"
+                            (load)="onImageLoad(item.ItemCode)" (error)="onImageError(item.ItemCode)"
+                            alt="Item Image" />
+                    </div>
+                </td>
+            </ng-container>
 
             <!-- Item Code Column -->
             <ng-container matColumnDef="ItemCode">

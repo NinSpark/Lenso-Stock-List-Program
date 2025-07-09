@@ -16,7 +16,10 @@ export class LensoItem {
     public DutyRate: number,
     public TaxCode: string,
     public Note: string,
-    public Image: string,
+    public Image: {
+      type: string;
+      data: number[];
+    },
     public CostingMethod: string,
     public SalesUOM: string,
     public PurchaseUOM: string,
@@ -56,5 +59,7 @@ export class LensoItem {
     public StockQty: number,
     public Cost: number,
     public Price: number
-  ) {}
+  ) { }
 }
+
+
