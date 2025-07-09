@@ -82,36 +82,102 @@ async function testDBConnection3() {
 
 // Fetch item list
 app.get('/api/item', async (req, res) => {
-    try {
-        const dbType = req.query.db; // 'kai_shen' or 'lenso'
-        const pool = await getDBPool(dbType);
-        const request = pool.request();
-        const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
+  try {
+    const dbType = req.query.db; // 'kai_shen' or 'lenso'
+    const pool = await getDBPool(dbType);
+    const request = pool.request();
+    const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
 
-        const result = await request.query(query);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error fetching stock:', err);
-        res.status(500).send('Server error');
-    }
+    const result = await request.query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching stock:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Fetch item price list
+app.get('/api/item-price', async (req, res) => {
+  try {
+    const dbType = req.query.db; // 'kai_shen' or 'lenso'
+    const pool = await getDBPool(dbType);
+    const request = pool.request();
+    const query = `SELECT * FROM dbo.ItemUOM`;
+
+    const result = await request.query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching Item price list:', err);
+    res.status(500).send('Server error');
+  }
 });
 
 // Fetch stock list
 app.get('/api/stock', async (req, res) => {
-    try {
-        const dbType = req.query.db; // 'kai_shen' or 'lenso'
-        const pool = await getDBPool(dbType);
-        const request = pool.request();
-        const query = `SELECT * FROM dbo.StockDTL`;
+  try {
+    const dbType = req.query.db; // 'kai_shen' or 'lenso'
+    const pool = await getDBPool(dbType);
+    const request = pool.request();
+    const query = `SELECT * FROM dbo.StockDTL`;
 
-        const result = await request.query(query);
-        res.json(result.recordset);
-    } catch (err) {
-        console.error('Error fetching stock:', err);
-        res.status(500).send('Server error');
-    }
+    const result = await request.query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching stock:', err);
+    res.status(500).send('Server error');
+  }
 });
 
+// Fetch filtered item list
+app.get('/api/filtered-item', async (req, res) => {
+  try {
+    const dbType = req.query.db; // 'kai_shen' or 'lenso'
+    const pool = await getDBPool(dbType);
+
+    // Extract and parse filters
+    const { type, size, pcd } = req.query;
+    const sizeList = size ? JSON.parse(size) : [];
+    const pcdList = pcd ? JSON.parse(pcd) : [];
+
+    let baseQuery = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
+    let conditions = [];
+    let parameters = {};
+
+    if (type && type !== 'all-type') {
+      conditions.push(`ItemClass = @type`);
+      parameters.type = type;
+    }
+
+    if (sizeList.length > 0) {
+      conditions.push(`(${sizeList.map((_, i) => `LEFT(ItemBrand, CHARINDEX('X', ItemBrand) - 1) = @size${i}`).join(' OR ')})`);
+      sizeList.forEach((val, i) => {
+        parameters[`size${i}`] = val;
+      });
+    }
+
+    if (pcdList.length > 0) {
+      conditions.push(`(${pcdList.map((_, i) => `ItemCategory = @pcd${i}`).join(' OR ')})`);
+      pcdList.forEach((val, i) => {
+        parameters[`pcd${i}`] = val;
+      });
+    }
+
+    if (conditions.length > 0) {
+      baseQuery += ' AND ' + conditions.join(' AND ');
+    }
+
+    const request = pool.request();
+    for (const [key, value] of Object.entries(parameters)) {
+      request.input(key, value);
+    }
+
+    const result = await request.query(baseQuery);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching filtered items:', err);
+    res.status(500).send('Server error');
+  }
+});
 
 // Start Server
 app.listen(port, async () => {

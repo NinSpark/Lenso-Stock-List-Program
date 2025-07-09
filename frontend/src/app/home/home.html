@@ -1,17 +1,69 @@
 <div class="body">
     <h2>Full Stock List</h2>
 
+    <div class="filter-select-options">
+        <mat-form-field>
+            <mat-label>Type</mat-label>
+            <mat-select [(ngModel)]="selectedType">
+                <mat-option value="all-type">All Type</mat-option>
+                <mat-option value="CAST">Cast</mat-option>
+                <mat-option value="FLOW FORM">Flow Form</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Size</mat-label>
+            <mat-select [formControl]="selectedSize" multiple>
+                <mat-select-trigger>
+                    {{ getSelectedSizeText() }}
+                </mat-select-trigger>
+                <mat-option #allSize value="all-size" (click)="toggleAllSize(allSize)">All Sizes</mat-option>
+                <mat-option *ngFor="let size of sizeList" [value]="size.value">{{size.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>P.C.D.</mat-label>
+            <mat-select [formControl]="selectedPCD" multiple>
+                <mat-select-trigger>
+                    {{ getSelectedPCDText() }}
+                </mat-select-trigger>
+                <mat-option #allPCD value="all-pcd" (click)="toggleAllPCD(allPCD)">All PCDs</mat-option>
+                <mat-option *ngFor="let pcd of pcdList" [value]="pcd.value">{{pcd.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- <mat-form-field>
+            <mat-label>Series</mat-label>
+            <mat-select [(ngModel)]="selectedSeries" multiple>
+                <mat-option value="all-series">All Series</mat-option>
+                <mat-option value="project-d">Project D</mat-option>
+                <mat-option value="venom">Venom</mat-option>
+                <mat-option value="jager">Jager</mat-option>
+                <mat-option value="mx">MX</mat-option>
+            </mat-select>
+        </mat-form-field> -->
+        <button matButton="filled" color="primary" (click)="applyFilter()"
+            [disabled]="selectedPCD.value!.length == 0 || selectedSize.value!.length == 0 || isLoading">Apply</button>
+    </div>
+
     <div class="checkbox-options">
-        <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" (change)="updateDisplayedColumns()">Show cost</mat-checkbox>
-        <mat-checkbox class="show-set-checkbox" [(ngModel)]="isSet" (change)="changeUOM()">Show set</mat-checkbox>
+        <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" (change)="updateDisplayedColumns()">Show
+            cost</mat-checkbox>
+        <mat-checkbox class="show-price-checkbox" [(ngModel)]="showPrice" (change)="updateDisplayedColumns()">Show
+            price</mat-checkbox>
+        <mat-checkbox class="show-set-checkbox" [(ngModel)]="isSet">Show set</mat-checkbox>
+        <mat-checkbox class="show-oos-checkbox" [(ngModel)]="showOOS">Show out of stock</mat-checkbox>
     </div>
 
     <div id="main-table-div">
+        <div *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
+        <div *ngIf="!showOOS">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
         <table mat-table [dataSource]="fullItemList" matSort class="mat-elevation-z8" style="width: 100%;">
 
             <!-- Item Code Column -->
             <ng-container matColumnDef="ItemCode">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by code">Item Code
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by code">Code
                 </th>
                 <td mat-cell *matCellDef="let item">{{ item.ItemCode }}</td>
             </ng-container>
@@ -23,26 +75,71 @@
                 <td mat-cell *matCellDef="let item">{{ item.Description }}</td>
             </ng-container>
 
+            <!-- Type Column -->
+            <ng-container matColumnDef="ItemClass">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by type">Type
+                </th>
+                <td mat-cell *matCellDef="let item">{{ item.ItemClass }}</td>
+            </ng-container>
+
+            <!-- Size Column -->
+            <ng-container matColumnDef="ItemBrand">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by size">Size
+                </th>
+                <td mat-cell *matCellDef="let item">{{ item.ItemBrand }}</td>
+            </ng-container>
+
+            <!-- PCD Column -->
+            <ng-container matColumnDef="ItemCategory">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by PCD">P.C.D.
+                </th>
+                <td mat-cell *matCellDef="let item">{{ item.ItemCategory }}</td>
+            </ng-container>
+
             <!-- Stock Qty Column -->
             <ng-container matColumnDef="StockQty">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by qty">Qty</th>
                 <td mat-cell *matCellDef="let item">
-                    <div *ngIf="item.StockQty % 1 != 0 && isSet;else default_qty">
-                        {{ roundDown(item.StockQty) }} ({{ item.StockQty * 4 }} PCS)
+                    <div *ngIf="item.StockQty == 0">
+                        <span>{{ item.StockQty }}</span>
                     </div>
-                    <ng-template #default_qty>{{ item.StockQty }}</ng-template>
+                    <div *ngIf="item.StockQty <= 7 && item.StockQty > 0">
+                        <span>{{ item.StockQty }}</span>
+                        <span *ngIf="isSet"> ({{ calculateSet(item.StockQty) }} set)</span>
+                    </div>
+                    <div *ngIf="item.StockQty > 7">
+                        <span>{{ item.StockQty }}</span>
+                        <span *ngIf="isSet"> ({{ calculateSet(item.StockQty) }} sets)</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Price per PCS -->
+            <ng-container matColumnDef="Price">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by price">Price (MYR)
+                </th>
+                <td mat-cell *matCellDef="let item">
+                    <div *ngIf="item.Price > -1">
+                        <div>{{ item.Price | number:'1.2-2' }}</div>
+                        <div *ngIf="isSet"><b>Per set: </b>{{ item.Price * 4 | number:'1.2-2' }}</div>
+                    </div>
+                    <div *ngIf="item.Price == -1">N/A</div>
                 </td>
             </ng-container>
 
             <!-- Cost per PCS -->
             <ng-container matColumnDef="Cost">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by cost">Cost</th>
-                <td mat-cell *matCellDef="let item">{{ item.Cost | number:'1.2-2' }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by cost">Cost (MYR)
+                </th>
+                <td mat-cell *matCellDef="let item">
+                    <div>{{ item.Cost | number:'1.2-2' }}</div>
+                    <div *ngIf="isSet"><b>Per set: </b>{{ item.Cost * 4 | number:'1.2-2' }}</div>
+                </td>
             </ng-container>
 
             <!-- Table Header + Body -->
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [hidden]="!showOOS && row.StockQty == 0"></tr>
         </table>
     </div>
 

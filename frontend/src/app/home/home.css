@@ -2,21 +2,35 @@
     text-align: end;
 }
 
+.main-table-div {
+    overflow: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
     background-color: white;
+
+    th {
+        background-color: black;
+        color: white;
+    }
 }
 
 .body {
     padding: 10px;
 }
 
+.filter-select-options,
 .checkbox-options {
     display: flex;
     justify-content: start;
     align-items: center;
     gap: 12px;
     margin: 12px 0;
+}
+
+.show-cost-checkbox {
+    display: none;
 }

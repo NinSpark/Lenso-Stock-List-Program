@@ -13,10 +13,10 @@
 html,
 body {
     height: 100%;
-    --mat-sys-primary: #a01b1f;
-    --mat-sys-surface-tint: #a01b1f;
-    --mat-sys-primary-container: #ffd7d7;
-    --mat-sys-primary-fixed: #ffd7d7;
+    --mat-sys-primary: #a01b1f !important;
+    --mat-sys-surface-tint: #a01b1f !important;
+    --mat-sys-primary-container: #ffd7d7 !important;
+    --mat-sys-primary-fixed: #ffd7d7 !important;
 }
 
 body {
@@ -36,9 +36,25 @@ body {
 
 html .mat-accent {
     --mat-progress-spinner-active-indicator-color: var(--accent-color) !important;
+    --mat-slider-active-track-color: #a01b1f;
+    --mat-slider-focus-handle-color: #a01b1f;
+    --mat-slider-focus-state-layer-color: rgba(255, 64, 129, 0.2);
+    --mat-slider-handle-color: #a01b1f;
+    --mat-slider-hover-handle-color: #a01b1f;
+    --mat-slider-hover-state-layer-color: rgba(255, 64, 129, 0.05);
+    --mat-slider-inactive-track-color: #a01b1f;
+    --mat-slider-ripple-color: #a01b1f;
+    --mat-slider-with-tick-marks-active-container-color: white;
+    --mat-slider-with-tick-marks-inactive-container-color: #a01b1f;
 }
 
-.mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background, .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+.mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+.mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
     border-color: #a01b1f !important;
+    background-color: #a01b1f !important;
+}
+
+.mdc-checkbox .mdc-checkbox__native-control:focus:checked+.mdc-checkbox__ripple {
+    opacity: var(--mat-checkbox-selected-focus-state-layer-opacity, var(--mat-sys-focus-state-layer-opacity));
     background-color: #a01b1f !important;
 }

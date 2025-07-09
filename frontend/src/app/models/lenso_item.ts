@@ -55,5 +55,6 @@ export class LensoItem {
     public ImageFileName: string,
     public StockQty: number,
     public Cost: number,
+    public Price: number
   ) {}
 }

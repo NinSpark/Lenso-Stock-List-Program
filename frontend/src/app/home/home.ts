@@ -19,6 +19,8 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { LensoPrice } from '../models/lenso_price';
+import { secureHeapUsed } from 'node:crypto';
 
 @Component({
   selector: 'app-home',
@@ -32,9 +34,39 @@ export class Home implements OnInit {
 
   fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
-  displayedColumns: string[] = ['ItemCode', 'Description', 'StockQty', 'Cost'];
+  displayedColumns: string[] = ['ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty', 'Cost'];
   isSet: boolean = false;
   showCost: boolean = false;
+  showPrice: boolean = false;
+  showOOS: boolean = false;
+
+  selectedSize = new FormControl<string[]>([]);
+  selectedPCD = new FormControl<string[]>([]);
+  selectedType: string = "all-type";
+  selectedSeries: string[] = [];
+
+  sizeList: any[] = [
+    { name: '15"', value: '15' },
+    { name: '16"', value: '16' },
+    { name: '17"', value: '17' },
+    { name: '18"', value: '18' },
+    { name: '19"', value: '19' },
+    { name: '20"', value: '20' }
+  ];
+
+  pcdList: any[] = [
+    { name: '4-100', value: '4-100' },
+    { name: '4-108', value: '4-108' },
+    { name: '4(100/114.3)', value: '4(100/114.3)' },
+    { name: '5-100', value: '5-100' },
+    { name: '5-108', value: '5-108' },
+    { name: '5-112', value: '5-112' },
+    { name: '5-114.3', value: '5-114.3' },
+    { name: '5-120', value: '5-120' },
+    { name: '5-139.7', value: '5-139.7' },
+    { name: '6-114.3', value: '6-114.3' },
+    { name: '6-139.7', value: '6-139.7' }
+  ];
 
   private _sort!: MatSort;
 
@@ -56,6 +88,7 @@ export class Home implements OnInit {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
     this.updateDisplayedColumns();
+    this.initializeFilter();
 
     try {
       await this.fetchItems();
@@ -67,9 +100,12 @@ export class Home implements OnInit {
   }
 
   updateDisplayedColumns() {
-    this.displayedColumns = ['ItemCode', 'Description', 'StockQty'];
+    this.displayedColumns = ['ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];
     if (this.showCost) {
       this.displayedColumns.push('Cost');
+    }
+    if (this.showPrice) {
+      this.displayedColumns.push('Price');
     }
   }
 
@@ -78,10 +114,31 @@ export class Home implements OnInit {
       this.stockService.getItemList(this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
 
-        this.fetchStocks();
+        this.fetchPrices();
       });
     } catch (error) {
       console.error('Error fetching items:', error);
+    }
+  }
+
+  async fetchPrices(): Promise<void> {
+    try {
+      this.stockService.getPriceList(this.isLensoDB).subscribe((data: LensoPrice[]) => {
+        this.fullItemList.data.forEach((item: LensoItem) => {
+          let price = data.find((itemPrice) => itemPrice.ItemCode == item.ItemCode)?.Price;
+
+          if (price) {
+            item.Price = price;
+          }
+          else {
+            item.Price = -1;
+          }
+        });
+
+        this.fetchStocks();
+      });
+    } catch (error) {
+      console.error('Error fetching prices:', error);
     }
   }
 
@@ -94,10 +151,13 @@ export class Home implements OnInit {
           item.StockQty = 0;
           item.Cost = 0;
 
-          const match = this.fullStockList.find((stock: LensoStock) => stock.ItemCode === item.ItemCode);
-          if (match) {
-            item.StockQty = match.Qty;
-            item.Cost = match.Cost;
+          let currentItemList = this.fullStockList.filter((stock: LensoStock) => stock.ItemCode === item.ItemCode);
+          currentItemList.forEach((currentItem) => {
+            item.StockQty += currentItem.Qty;
+          });
+
+          if (currentItemList.length > 0) {
+            item.Cost = currentItemList[0].Cost;
           }
         });
       });
@@ -106,22 +166,92 @@ export class Home implements OnInit {
     }
   }
 
-  changeUOM() {
-    if (!this.isSet) {
-      this.fullItemList.data.forEach((item: LensoItem) => {
-        item.StockQty = item.StockQty * 4;
-        item.Cost = item.Cost * 4;
-      });
+  initializeFilter() {
+    this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
+    this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
+  }
+
+  calculateSet(value: number): number {
+    return Math.floor(value / 4);
+  }
+
+  inStockCount() {
+    return this.fullItemList.data.filter(item => item.StockQty > 0).length;
+  }
+
+  toggleAllSize(event: any) {
+    if (event._selected) {
+      this.selectedSize.setValue(this.sizeList.map(size => size.value));
+      event._selected = true;
     }
     else {
-      this.fullItemList.data.forEach((item: LensoItem) => {
-        item.StockQty = item.StockQty / 4;
-        item.Cost = item.Cost / 4;
-      });
+      this.selectedSize.setValue([]);
     }
   }
 
-  roundDown(value: number): number {
-    return Math.floor(value);
+  getSelectedSizeText(): string {
+    const values: string[] = this.selectedSize.value || [];
+    const actualValues = values.filter(v => v !== 'all-size');
+
+    if (actualValues.length === this.sizeList.length) {
+      return 'All Sizes';
+    }
+
+    return this.sizeList
+      .filter(size => actualValues.includes(size.value))
+      .map(size => size.name)
+      .join(', ');
+  }
+
+  toggleAllPCD(event: any) {
+    if (event._selected) {
+      this.selectedPCD.setValue(this.pcdList.map(pcd => pcd.value));
+      event._selected = true;
+    }
+    else {
+      this.selectedPCD.setValue([]);
+    }
+  }
+
+  getSelectedPCDText(): string {
+    const values: string[] = this.selectedPCD.value || [];
+    const actualValues = values.filter(v => v !== 'all-pcd');
+
+    if (actualValues.length === this.pcdList.length) {
+      return 'All PCDs';
+    }
+
+    return this.pcdList
+      .filter(pcd => actualValues.includes(pcd.value))
+      .map(pcd => pcd.name)
+      .join(', ');
+  }
+
+  async applyFilter() {
+    this.isLoading = true;
+    let selectedSizes: string[] = this.selectedSize.value || [];
+    let selectedPCDs: string[] = this.selectedPCD.value || [];
+    let selectedType: string = this.selectedType;
+
+    const pcdIndex = selectedPCDs.indexOf("all-pcd");
+    if (pcdIndex > -1) {
+      selectedPCDs.splice(pcdIndex, 1);
+    }
+    const sizeIndex = selectedSizes.indexOf("all-size");
+    if (sizeIndex > -1) {
+      selectedSizes.splice(sizeIndex, 1);
+    }
+
+    try {
+      this.stockService.getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB).subscribe((data: LensoItem[]) => {
+        this.fullItemList.data = data;
+
+        this.fetchPrices();
+      });
+    } catch (error) {
+      console.error('Error during filtering:', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

@@ -10,7 +10,9 @@ export class StockService {
     // private domain = "https://glm84bs6-3000.asse.devtunnels.ms";
 
     private itemApiUrl = `${this.domain}/api/item`;
+    private filteredItemApiUrl = `${this.domain}/api/filtered-item`;
     private stockApiUrl = `${this.domain}/api/stock`;
+    private priceApiUrl = `${this.domain}/api/item-price`;
 
     constructor(private http: HttpClient) { }
 
@@ -24,5 +26,22 @@ export class StockService {
         const dbParam = isLensoDB ? 'lenso' : 'kai_shen';
         const url = `${this.stockApiUrl}?db=${dbParam}`;
         return this.http.get<any[]>(url);
+    }
+
+    getPriceList(isLensoDB?: boolean): Observable<any[]> {
+        const dbParam = isLensoDB ? 'lenso' : 'kai_shen';
+        const url = `${this.priceApiUrl}?db=${dbParam}`;
+        return this.http.get<any[]>(url);
+    }
+
+    getFilteredItem(type: string, size: string[], pcd: string[], isLensoDB: boolean) {
+        const dbParam = isLensoDB ? 'lenso' : 'kai_shen';
+        return this.http.get<any[]>(`${this.filteredItemApiUrl}?db=${dbParam}`, {
+            params: {
+                type,
+                pcd: JSON.stringify(pcd),
+                size: JSON.stringify(size)
+            }
+        });
     }
 }
