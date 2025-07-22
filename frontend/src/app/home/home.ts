@@ -1,5 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,12 +19,12 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
 import { LensoPrice } from '../models/lenso_price';
-import { secureHeapUsed } from 'node:crypto';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, MatDatepickerModule, MatSelectModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatIconModule, MatSlideToggleModule, MatCheckboxModule, MatTableModule, MatSortModule, MatInputModule, MatProgressSpinner],
+  imports: [CommonModule, MatDatepickerModule, MatSelectModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatIconModule, MatSlideToggleModule, MatCheckboxModule, MatTableModule, MatSortModule, MatInputModule, MatProgressSpinner, MatCardModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -39,6 +39,8 @@ export class Home implements OnInit {
   showCost: boolean = false;
   showPrice: boolean = false;
   showOOS: boolean = false;
+  isMobileView: boolean = false;
+  isTabletView: boolean = false;
 
   selectedSize = new FormControl<string[]>([]);
   selectedPCD = new FormControl<string[]>([]);
@@ -71,6 +73,18 @@ export class Home implements OnInit {
     { name: '6-139.7', value: '6-139.7' }
   ];
 
+  resetFilters(): void {
+    this.selectedType = 'all-type';
+    this.selectedSize.setValue([]);
+    this.selectedPCD.setValue([]);
+    this.showCost = false;
+    this.showPrice = false;
+    this.isSet = false;
+    this.showOOS = false;
+
+    this.applyFilter(); // re-apply with cleared filters
+  }
+
   private _sort!: MatSort;
 
   @ViewChild(MatSort)
@@ -85,11 +99,18 @@ export class Home implements OnInit {
     private stockService: StockService,
     private router: Router,
     private renderer: Renderer2,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.checkScreen();
+      window.addEventListener('resize', this.checkScreen.bind(this));
+    }
+
     this.updateDisplayedColumns();
     this.initializeFilter();
 
@@ -101,6 +122,13 @@ export class Home implements OnInit {
       this.isLoading = false;
     }
   }
+
+  checkScreen() {
+    const width = window.innerWidth;
+    this.isMobileView = width <= 600;
+    this.isTabletView = width > 600 && width <= 960;
+  }
+
 
   updateDisplayedColumns() {
     this.displayedColumns = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];

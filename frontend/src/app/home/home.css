@@ -1,44 +1,187 @@
 .text-align-end {
-    text-align: end;
+  text-align: end;
 }
 
 .main-table-div {
-    overflow: auto;
+  overflow: auto;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    background-color: white;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background-color: white;
 
-    th {
-        background-color: black;
-        color: white;
-    }
+  th {
+    background-color: rgb(163, 37, 37);
+    color: white;
+  }
 }
 
 .body {
-    padding: 10px;
+  padding: 10px;
 }
 
 .filter-select-options,
 .checkbox-options {
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    gap: 12px;
-    margin: 12px 0;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
 }
 
 .show-cost-checkbox {
-    display: none;
+  display: none;
 }
 
 .loading-container {
-    text-align: center;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+}
+
+/* mobile css */
+@media only screen and (max-width: 600px) {
+
+  .filter-select-options,
+  .checkbox-options {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .filter-select-options mat-form-field,
+  .checkbox-options mat-checkbox {
+    width: 100%;
+  }
+
+  table,
+  th,
+  td {
+    font-size: 12px;
+  }
+
+  img {
+    width: 100px;
+  }
+
+  .current-qty {
+    min-width: 40px;
+    min-height: 40px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 60vh;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid black;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #171c22;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  }
+}
+
+
+/* tablet css */
+@media only screen and (min-width: 601px) and (max-width: 960px) {
+  .filter-select-options,
+  .checkbox-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .filter-select-options mat-form-field,
+  .checkbox-options mat-checkbox {
+    width: 48%;
+  }
+
+  mat-card {
+    margin-bottom: 16px;
+  }
+
+  .item-description {
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .info-qty-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .left-info p {
+    font-size: 15px;
+    margin: 6px 0;
+  }
+
+  .qty-box-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .qty-label {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .qty-box {
+  min-width: 30px;
+  height: 30px;
+  font-size: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.card-top-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.card-top-section img {
+  width: 180px;
+}
+
+.card-top-section h3 {
+  text-align: center;
+}
+
+.card-top-section .item-description {
+  margin-top: 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+  .pcs-price-text {
+    font-size: 17px;
+  }
+  .tablet-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.tablet-card-grid mat-card {
+  flex: 0 0 50%;
+}
+
+  table,
+  th,
+  td {
+    font-size: 13px;
+  }
+
+  img {
+    width: 120px;
+  }
 }

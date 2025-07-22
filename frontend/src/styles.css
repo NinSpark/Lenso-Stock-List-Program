@@ -58,3 +58,9 @@ html .mat-accent {
     opacity: var(--mat-checkbox-selected-focus-state-layer-opacity, var(--mat-sys-focus-state-layer-opacity));
     background-color: #a01b1f !important;
 }
+
+.mat-mdc-form-field-subscript-wrapper.mat-mdc-form-field-bottom-align {
+    display: none;
+}
+
+
