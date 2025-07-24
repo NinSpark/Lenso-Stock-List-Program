@@ -63,4 +63,10 @@ html .mat-accent {
     display: none;
 }
 
+.mat-mdc-card-content:last-child {
+    padding-bottom: 4px !important;
+}
 
+mat-divider {
+  --mat-divider-width: 2px;
+}

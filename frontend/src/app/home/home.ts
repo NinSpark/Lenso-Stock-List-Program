@@ -75,8 +75,8 @@ export class Home implements OnInit {
 
   resetFilters(): void {
     this.selectedType = 'all-type';
-    this.selectedSize.setValue([]);
-    this.selectedPCD.setValue([]);
+    this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
+    this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
     this.showCost = false;
     this.showPrice = false;
     this.isSet = false;

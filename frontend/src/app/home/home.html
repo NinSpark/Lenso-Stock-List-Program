@@ -69,8 +69,8 @@
 
     <ng-container *ngIf="!isLoading && !isMobileView && !isTabletView">
         <div id="main-table-div">
-            <div *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
-            <div *ngIf="!showOOS">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
+            <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
+            <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
                 item(s) are unavailable.</div>
             <table mat-table [dataSource]="fullItemList" matSort class="mat-elevation-z8" style="width: 100%;">
 
@@ -78,7 +78,7 @@
                 <ng-container matColumnDef="Image">
                     <th mat-header-cell *matHeaderCellDef>Image</th>
                     <td mat-cell *matCellDef="let item">
-                        <div style="display: flex; justify-content: center; align-items: center;">
+                        <div class="display-flex">
                             <mat-spinner *ngIf="loadingMap[item.ItemCode]" diameter="90"
                                 style="margin: 10px 0;"></mat-spinner>
                             <img *ngIf="imageUrlMap[item.ItemCode]" [src]="imageUrlMap[item.ItemCode]" width="200"
@@ -175,39 +175,78 @@
         </div>
     </ng-container>
 
+    <!-- Mobile: 1 card per row -->
     <ng-container *ngIf="isMobileView">
-        <mat-card *ngFor="let item of fullItemList.data">
-            <div class="mobile-card-header">
-                <img mat-card-image [src]="imageUrlMap[item.ItemCode]" alt="Item Image" />
-                <h3>{{ item.ItemCode }}</h3>
-                <p class="item-description">{{ item.Description }}</p>
-            </div>
+        <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
+        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
+            item(s) are unavailable.</div>
 
-            <mat-card-content>
-                <div class="mobile-info-qty">
-                    <div class="left-info">
-                        <p><b>Type:</b> {{ item.ItemClass }}</p>
-                        <p><b>Size:</b> {{ item.ItemBrand }}</p>
-                        <p><b>PCD:</b> {{ item.ItemCategory }}</p>
+        <ng-container *ngFor="let item of fullItemList.data">
+            <ng-container *ngIf="showOOS || item.StockQty > 0">
+                <mat-card>
+                    <div class="mobile-card-header">
+                        <img mat-card-image [src]="imageUrlMap[item.ItemCode]" alt="Item Image" />
+                        <p class="item-description"><b>{{ item.Description }}</b></p>
+                        <p class="code-name">{{ item.ItemCode }}</p>
                     </div>
-                    <div class="current-qty">
-                        {{ item.StockQty }}
-                    </div>
-                </div>
 
-                <p *ngIf="showPrice" class="pcs-price-text">
-                    <b>Price:</b> {{ item.Price | number:'1.2-2' }}
-                </p>
-                <p *ngIf="showCost" class="pcs-price-text">
-                    <b>Cost:</b> {{ item.Cost | number:'1.2-2' }}
-                </p>
-            </mat-card-content>
-        </mat-card>
+                    <mat-card-content>
+                        <div class="mobile-info-qty">
+                            <div class="info-details">
+                                <div class="type-info">
+                                    <mat-icon fontIcon="hardware"></mat-icon>
+                                    <div>{{ item.ItemClass | titlecase }}</div>
+                                </div>
+                                <div class="size-info">
+                                    <mat-icon fontIcon="straighten"></mat-icon>
+                                    <div>{{ item.ItemBrand }}</div>
+                                </div>
+                                <div class="pcd-info">
+                                    <!-- <mat-icon fontIcon="spoke"></mat-icon> -->
+                                    <img src="assets/PCD-01-02-01.svg" style="width: 24px; height: 24px; margin: 0" />
+                                    <div>{{ item.ItemCategory }}</div>
+                                </div>
+                            </div>
+                            <div class="qty-section">
+                                <div class="current-qty">
+                                    <div style="display: flex; justify-content: space-evenly; align-items: center; width: 100%;">
+                                        <div style="padding: 8px 0 4px 0;">
+                                            <div>{{ item.StockQty }}</div>
+                                            <div style="font-size: 10px;">PCS</div>
+                                        </div>
+                                        <mat-divider *ngIf="isSet" [vertical]="true"
+                                            style="height: 50px;"></mat-divider>
+                                        <div *ngIf="isSet" style="padding: 8px 0 4px 0;">
+                                            <div>{{ calculateSet(item.StockQty) }}</div>
+                                            <div style="font-size: 10px;">SET</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="showPrice" class="current-price">
+                                    <div *ngIf="item.Price == -1">
+                                        <div>N/A</div>
+                                        <div style="font-size: 12px;">Price not available</div>
+                                    </div>
+                                    <div *ngIf="item.Price != -1">
+                                        <div style="font-size: 12px; padding-bottom: 2px;">MYR</div>
+                                        <div style="padding-bottom: 2px;">{{ item.Price | number:'1.2-2' }}</div>
+                                        <div class="set-div">RM {{ item.Price * 4 | number:'1.2-2' }} per set</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </ng-container>
+        </ng-container>
     </ng-container>
 
-
+    <!-- Tablet: 2 cards per row -->
     <ng-container *ngIf="isTabletView">
-        <!-- Tablet: 2 cards per row -->
+        <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
+        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
+            item(s) are unavailable.</div>
+
         <div class="tablet-card-grid">
             <mat-card *ngFor="let item of fullItemList.data">
                 <div class="card-top-section">
