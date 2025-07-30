@@ -1,6 +1,7 @@
-import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { StockService } from '../../services/stock.service';
@@ -24,7 +25,7 @@ import { LensoPrice } from '../models/lenso_price';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, MatDatepickerModule, MatSelectModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatIconModule, MatSlideToggleModule, MatCheckboxModule, MatTableModule, MatSortModule, MatInputModule, MatProgressSpinner, MatCardModule],
+  imports: [CommonModule, MatDatepickerModule, MatSelectModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatIconModule, MatSlideToggleModule, MatCheckboxModule, MatTableModule, MatSortModule, MatInputModule, MatProgressSpinner, MatCardModule, MatExpansionModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -32,14 +33,17 @@ export class Home implements OnInit {
   isLoading: boolean = false;
   isLensoDB: boolean = true;
 
+  @ViewChild('searchbar') searchbar!: ElementRef;
+  searchRimText = '';
+
   fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
   displayedColumns: string[] = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty', 'Cost'];
   isSet: boolean = false;
   showCost: boolean = false;
   showPrice: boolean = false;
-  showOOS: boolean = false;
-  isMobileView: boolean = false;
+  showOOS: boolean = true;
+  isMobileView: boolean = true;
   isTabletView: boolean = false;
 
   selectedSize = new FormControl<string[]>([]);
@@ -49,6 +53,7 @@ export class Home implements OnInit {
 
   imageUrlMap: { [itemCode: string]: string } = {};
   loadingMap: { [itemCode: string]: boolean } = {};
+  selectedItems: LensoItem[] = [];
 
   sizeList: any[] = [
     { name: '15"', value: '15' },
@@ -72,18 +77,6 @@ export class Home implements OnInit {
     { name: '6-114.3', value: '6-114.3' },
     { name: '6-139.7', value: '6-139.7' }
   ];
-
-  resetFilters(): void {
-    this.selectedType = 'all-type';
-    this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
-    this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
-    this.showCost = false;
-    this.showPrice = false;
-    this.isSet = false;
-    this.showOOS = false;
-
-    this.applyFilter(); // re-apply with cleared filters
-  }
 
   private _sort!: MatSort;
 
@@ -123,12 +116,61 @@ export class Home implements OnInit {
     }
   }
 
+  filteredItems() {
+    if (!this.searchRimText) return this.fullItemList.data;
+
+    const lowerSearch = this.searchRimText.toLowerCase();
+
+    return this.fullItemList.data.filter(item =>
+      item.ItemCode?.toLowerCase().includes(lowerSearch) ||
+      item.Description?.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  filteredItemsTable() {
+    if (!this.searchRimText) return this.fullItemList;
+
+    const lowerSearch = this.searchRimText.toLowerCase();
+    var filteredItemList = new MatTableDataSource<LensoItem>();
+
+    filteredItemList.data = this.fullItemList.data.filter(item =>
+      item.ItemCode?.toLowerCase().includes(lowerSearch) ||
+      item.Description?.toLowerCase().includes(lowerSearch)
+    );
+
+    return filteredItemList;
+  }
+
   checkScreen() {
     const width = window.innerWidth;
     this.isMobileView = width <= 600;
     this.isTabletView = width > 600 && width <= 960;
   }
 
+  resetFilters(): void {
+    this.selectedType = 'all-type';
+    this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
+    this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
+    this.showCost = false;
+    this.showPrice = false;
+    this.isSet = false;
+    this.showOOS = false;
+
+    this.applyFilter();
+  }
+
+  toggleCard(item: LensoItem) {
+    const index = this.selectedItems.indexOf(item);
+    if (index >= 0) {
+      this.selectedItems.splice(index, 1);
+    } else {
+      this.selectedItems.push(item);
+    }
+  }
+
+  isSelected(item: LensoItem): boolean {
+    return this.selectedItems.includes(item);
+  }
 
   updateDisplayedColumns() {
     this.displayedColumns = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];
@@ -144,26 +186,36 @@ export class Home implements OnInit {
     try {
       this.stockService.getItemList(this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
-        this.generateBlobUrls(data);
 
-        this.fetchPrices();
+        if (isPlatformBrowser(this.platformId)) {
+          this.generateBlobUrls(data);
+        }
+
+        this.fetchPriceAndWeight();
       });
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   }
 
-  async fetchPrices(): Promise<void> {
+  async fetchPriceAndWeight(): Promise<void> {
     try {
       this.stockService.getPriceList(this.isLensoDB).subscribe((data: LensoPrice[]) => {
         this.fullItemList.data.forEach((item: LensoItem) => {
           let price = data.find((itemPrice) => itemPrice.ItemCode == item.ItemCode)?.Price;
-
           if (price) {
             item.Price = price;
           }
           else {
             item.Price = -1;
+          }
+
+          let weight = data.find((itemWeight) => itemWeight.ItemCode == item.ItemCode)?.Weight;
+          if (weight) {
+            item.Weight = weight;
+          }
+          else {
+            item.Weight = -1;
           }
         });
 
@@ -208,7 +260,7 @@ export class Home implements OnInit {
   }
 
   inStockCount() {
-    return this.fullItemList.data.filter(item => item.StockQty > 0).length;
+    return this.filteredItems().filter(item => item.StockQty > 0).length;
   }
 
   toggleAllSize(event: any) {
@@ -277,9 +329,14 @@ export class Home implements OnInit {
     try {
       this.stockService.getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
-        this.generateBlobUrls(data);
 
-        this.fetchPrices();
+        if (isPlatformBrowser(this.platformId)) {
+          this.generateBlobUrls(data);
+        }
+
+        this.fetchPriceAndWeight();
+
+        console.log(this.fullItemList.data);
       });
     } catch (error) {
       console.error('Error during filtering:', error);
@@ -289,9 +346,13 @@ export class Home implements OnInit {
   }
 
   generateBlobUrls(data: LensoItem[]) {
+    for (const url of Object.values(this.imageUrlMap || {})) {
+      URL.revokeObjectURL(url);
+    }
+
     this.imageUrlMap = {};
     data.forEach(item => {
-      if (item.Image) {
+      if (item.Image && item.Image.data && Array.isArray(item.Image.data)) {
         const byteArray = new Uint8Array(item.Image.data);
         const blob = new Blob([byteArray], { type: 'image/jpeg' });
         const url = URL.createObjectURL(blob);
@@ -306,5 +367,35 @@ export class Home implements OnInit {
 
   onImageError(itemCode: string) {
     this.loadingMap[itemCode] = false;
+  }
+
+  async shareSelectedImages() {
+    console.log(!navigator.canShare)
+    console.log(!navigator.canShare({ files: [] }))
+    if (!navigator.canShare || !navigator.canShare({ files: [] })) {
+      alert("Sharing images is not supported on this device.");
+      return;
+    }
+
+    const files: File[] = this.selectedItems.map((item, index) =>
+      this.convertImageToFile(item.Image, `${item.ItemCode}.png`)
+    );
+    console.log('Can share files:', navigator.canShare({ files }));
+
+    try {
+      await navigator.share({
+        title: 'Check out these wheels!',
+        files,
+        text: 'Here are some rims you might like.',
+      });
+    } catch (err) {
+      console.error('Sharing failed:', err);
+    }
+  }
+
+  convertImageToFile(imageObj: { type: string; data: number[] }, filename: string): File {
+    const byteArray = new Uint8Array(imageObj.data);
+    const blob = new Blob([byteArray], { type: imageObj.type });
+    return new File([blob], filename, { type: imageObj.type });
   }
 }

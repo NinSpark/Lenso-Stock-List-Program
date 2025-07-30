@@ -1,7 +1,87 @@
 <div class="body">
-    <h2>Full Stock List</h2>
 
-    <div class="filter-select-options">
+    <div class="first-row">
+        <mat-form-field class="search-form-field">
+            <mat-label>Search Wheel Keyword</mat-label>
+            <input matInput placeholder="e.g. V1N" [(ngModel)]="searchRimText" #searchbar>
+            <button *ngIf="searchRimText" matSuffix mat-icon-button aria-label="Clear" (click)="searchRimText = ''">
+                <mat-icon>close</mat-icon>
+            </button>
+        </mat-form-field>
+
+        <button matIconButton [matMenuTriggerFor]="menu" class="more-option-button">
+            <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="shareSelectedImages()" [disabled]="selectedItems.length == 0">
+                <mat-icon>publish</mat-icon>
+                <span>Share...</span>
+            </button>
+        </mat-menu>
+    </div>
+
+    <mat-accordion>
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Filter Options</mat-panel-title>
+                <mat-panel-description>
+                    Size | Type | P.C.D.
+                    <mat-icon>tune</mat-icon>
+                </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="filter-select-options">
+                <mat-form-field>
+                    <mat-label>Size</mat-label>
+                    <mat-select [formControl]="selectedSize" multiple>
+                        <mat-select-trigger>
+                            {{ getSelectedSizeText() }}
+                        </mat-select-trigger>
+                        <mat-option #allSize value="all-size" (click)="toggleAllSize(allSize)">All Sizes</mat-option>
+                        <mat-option *ngFor="let size of sizeList" [value]="size.value">{{size.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>P.C.D.</mat-label>
+                    <mat-select [formControl]="selectedPCD" multiple>
+                        <mat-select-trigger>
+                            {{ getSelectedPCDText() }}
+                        </mat-select-trigger>
+                        <mat-option #allPCD value="all-pcd" (click)="toggleAllPCD(allPCD)">All PCDs</mat-option>
+                        <mat-option *ngFor="let pcd of pcdList" [value]="pcd.value">{{pcd.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Type</mat-label>
+                    <mat-select [(ngModel)]="selectedType">
+                        <mat-option value="all-type">All Type</mat-option>
+                        <mat-option value="CAST">Cast</mat-option>
+                        <mat-option value="FLOW FORM">Flow Form</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <button matButton="filled" color="primary" (click)="applyFilter()"
+                    [disabled]="selectedPCD.value!.length == 0 || selectedSize.value!.length == 0 || isLoading">
+                    Apply
+                </button>
+
+                <button mat-button color="warn" (click)="resetFilters()" [disabled]="isLoading">
+                    Reset
+                </button>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <div class="filter-select-options" style="display: none;">
+        <mat-form-field class="search-form-field">
+            <mat-label>Search Wheel</mat-label>
+            <input matInput placeholder="E.g. V1N" [(ngModel)]="searchRimText" #searchbar>
+            <button *ngIf="searchRimText" matSuffix mat-icon-button aria-label="Clear" (click)="searchRimText = ''">
+                <mat-icon>close</mat-icon>
+            </button>
+        </mat-form-field>
+
         <mat-form-field>
             <mat-label>Type</mat-label>
             <mat-select [(ngModel)]="selectedType">
@@ -33,16 +113,6 @@
             </mat-select>
         </mat-form-field>
 
-        <!-- <mat-form-field>
-            <mat-label>Series</mat-label>
-            <mat-select [(ngModel)]="selectedSeries" multiple>
-                <mat-option value="all-series">All Series</mat-option>
-                <mat-option value="project-d">Project D</mat-option>
-                <mat-option value="venom">Venom</mat-option>
-                <mat-option value="jager">Jager</mat-option>
-                <mat-option value="mx">MX</mat-option>
-            </mat-select>
-        </mat-form-field> -->
         <button matButton="filled" color="primary" (click)="applyFilter()"
             [disabled]="selectedPCD.value!.length == 0 || selectedSize.value!.length == 0 || isLoading">
             Apply
@@ -52,7 +122,6 @@
             Reset
         </button>
     </div>
-
 
     <div class="checkbox-options">
         <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" (change)="updateDisplayedColumns()">Show
@@ -69,10 +138,10 @@
 
     <ng-container *ngIf="!isLoading && !isMobileView && !isTabletView">
         <div id="main-table-div">
-            <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
-            <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
-                item(s) are unavailable.</div>
-            <table mat-table [dataSource]="fullItemList" matSort class="mat-elevation-z8" style="width: 100%;">
+            <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
+            <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
+                inStockCount()}} item(s) are unavailable.</div>
+            <table mat-table [dataSource]="filteredItemsTable()" matSort class="mat-elevation-z8" style="width: 100%;">
 
                 <!-- Image Column -->
                 <ng-container matColumnDef="Image">
@@ -81,7 +150,7 @@
                         <div class="display-flex">
                             <mat-spinner *ngIf="loadingMap[item.ItemCode]" diameter="90"
                                 style="margin: 10px 0;"></mat-spinner>
-                            <img *ngIf="imageUrlMap[item.ItemCode]" [src]="imageUrlMap[item.ItemCode]" width="200"
+                            <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" width="200"
                                 (load)="onImageLoad(item.ItemCode)" (error)="onImageError(item.ItemCode)"
                                 alt="Item Image" />
                         </div>
@@ -175,17 +244,19 @@
         </div>
     </ng-container>
 
+    <mat-divider style="margin-bottom: 20px;"></mat-divider>
+
     <!-- Mobile: 1 card per row -->
     <ng-container *ngIf="isMobileView">
-        <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
-        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
-            item(s) are unavailable.</div>
+        <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
+        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
+            inStockCount()}} item(s) are unavailable.</div>
 
-        <ng-container *ngFor="let item of fullItemList.data">
+        <ng-container *ngFor="let item of filteredItems()">
             <ng-container *ngIf="showOOS || item.StockQty > 0">
-                <mat-card>
+                <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [ngClass]="{'selected-card': isSelected(item)}">
                     <div class="mobile-card-header">
-                        <img mat-card-image [src]="imageUrlMap[item.ItemCode]" alt="Item Image" />
+                        <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" />
                         <p class="item-description"><b>{{ item.Description }}</b></p>
                         <p class="code-name">{{ item.ItemCode }}</p>
                     </div>
@@ -197,19 +268,24 @@
                                     <mat-icon fontIcon="hardware"></mat-icon>
                                     <div>{{ item.ItemClass | titlecase }}</div>
                                 </div>
-                                <div class="size-info">
+                                <!-- <div class="size-info">
                                     <mat-icon fontIcon="straighten"></mat-icon>
                                     <div>{{ item.ItemBrand }}</div>
-                                </div>
+                                </div> -->
                                 <div class="pcd-info">
-                                    <!-- <mat-icon fontIcon="spoke"></mat-icon> -->
                                     <img src="assets/PCD-01-02-01.svg" style="width: 24px; height: 24px; margin: 0" />
                                     <div>{{ item.ItemCategory }}</div>
+                                </div>
+                                <div class="weight-info">
+                                    <img src="assets/weight_filled.svg" style="width: 24px; height: 24px; margin: 0" />
+                                    <div *ngIf="item.Weight > 0">{{ item.Weight | number:'1.2-2' }} kg</div>
+                                    <div *ngIf="item.Weight == -1">N/A</div>
                                 </div>
                             </div>
                             <div class="qty-section">
                                 <div class="current-qty">
-                                    <div style="display: flex; justify-content: space-evenly; align-items: center; width: 100%;">
+                                    <div
+                                        style="display: flex; justify-content: space-evenly; align-items: center; width: 100%;">
                                         <div style="padding: 8px 0 4px 0;">
                                             <div>{{ item.StockQty }}</div>
                                             <div style="font-size: 10px;">PCS</div>
@@ -239,18 +315,20 @@
                 </mat-card>
             </ng-container>
         </ng-container>
+        <div class="code-name text-align-center">E.O.F.</div>
+        <mat-divider></mat-divider>
     </ng-container>
 
     <!-- Tablet: 2 cards per row -->
     <ng-container *ngIf="isTabletView">
-        <div *ngIf="showOOS && !isLoading">Showing {{fullItemList.data.length}} result(s).</div>
-        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{fullItemList.data.length - inStockCount()}}
-            item(s) are unavailable.</div>
+        <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
+        <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
+            inStockCount()}} item(s) are unavailable.</div>
 
         <div class="tablet-card-grid">
-            <mat-card *ngFor="let item of fullItemList.data">
+            <mat-card *ngFor="let item of filteredItems()">
                 <div class="card-top-section">
-                    <img mat-card-image [src]="imageUrlMap[item.ItemCode]" alt="Item Image" />
+                    <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" />
                     <h3>{{ item.ItemCode }}</h3>
                     <p class="item-description">{{ item.Description }}</p>
                 </div>

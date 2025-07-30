@@ -2,6 +2,10 @@
   text-align: end;
 }
 
+.text-align-center {
+  text-align: center;
+}
+
 .display-flex {
   display: flex;
   justify-content: center;
@@ -34,7 +38,7 @@ table {
   display: flex;
   justify-content: start;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
   margin: 12px 0;
 }
 
@@ -60,8 +64,16 @@ table {
     width: 100%;
   }
 
+  mat-expansion-panel {
+    margin-top: 10px;
+  }
+
   .filter-select-options mat-form-field,
   .checkbox-options mat-checkbox {
+    width: 100%;
+  }
+
+  .search-form-field {
     width: 100%;
   }
 
@@ -91,8 +103,8 @@ table {
 
   mat-card {
     padding: 10px 0;
-    margin: 10px 0;
-    border: 1px solid #797979;
+    margin: 4px 0 16px 0;
+    border: 2px solid #797979;
 
     img {
       margin: 10px;
@@ -153,11 +165,30 @@ table {
 
   .type-info,
   .size-info,
-  .pcd-info {
+  .pcd-info,
+  .weight-info {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 4px;
+  }
+
+  .first-row {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    gap: 4px;
+  }
+
+  .more-option-button {
+    margin: auto;
+  }
+
+  .selected-card {
+    border: 2px solid #a01b1f;
+    background-color: rgba(176, 176, 176, 0.2);
+    box-shadow: 0 0 8px rgba(181, 63, 63, 0.4);
+    transition: border 0.1s, box-shadow 0.1s;
   }
 }
 

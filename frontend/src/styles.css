@@ -68,5 +68,13 @@ html .mat-accent {
 }
 
 mat-divider {
-  --mat-divider-width: 2px;
+    --mat-divider-width: 2px;
+}
+
+.mat-expansion-panel-body {
+    padding: 0 12px !important;
+}
+
+.mat-expansion-panel-header-description {
+    justify-content: space-between !important;
 }
