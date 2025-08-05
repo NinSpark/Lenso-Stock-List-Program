@@ -14,8 +14,18 @@
         </button>
         <mat-menu #menu="matMenu">
             <button mat-menu-item (click)="shareSelectedImages()" [disabled]="selectedItems.length == 0">
-                <mat-icon>publish</mat-icon>
-                <span>Share...</span>
+                <mat-icon>share</mat-icon>
+                <span>Share Image</span>
+            </button>
+            <button mat-menu-item (click)="exportToPDF()" [disabled]="selectedItems.length == 0">
+                <img src="assets/export.svg" style="width: 24px; height: 24px; margin-right: 16px" />
+                <span>Share PDF</span>
+            </button>
+            <button mat-menu-item (click)="selectAll()">
+                <mat-icon *ngIf="selectedItems.length == 0">playlist_add_check</mat-icon>
+                <span *ngIf="selectedItems.length == 0">Select All</span>
+                <mat-icon *ngIf="selectedItems.length > 0">playlist_remove</mat-icon>
+                <span *ngIf="selectedItems.length > 0">Deselect All</span>
             </button>
         </mat-menu>
     </div>
@@ -61,7 +71,7 @@
                     </mat-select>
                 </mat-form-field>
 
-                <button matButton="filled" color="primary" (click)="applyFilter()"
+                <button matButton="filled" color="primary" (click)="applyFilter()" style="margin-top: 8px;"
                     [disabled]="selectedPCD.value!.length == 0 || selectedSize.value!.length == 0 || isLoading">
                     Apply
                 </button>
@@ -244,7 +254,7 @@
         </div>
     </ng-container>
 
-    <mat-divider style="margin-bottom: 20px;"></mat-divider>
+    <mat-divider style="margin-bottom: 16px;"></mat-divider>
 
     <!-- Mobile: 1 card per row -->
     <ng-container *ngIf="isMobileView">
@@ -255,6 +265,7 @@
         <ng-container *ngFor="let item of filteredItems()">
             <ng-container *ngIf="showOOS || item.StockQty > 0">
                 <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [ngClass]="{'selected-card': isSelected(item)}">
+                    <mat-checkbox class="item-card-checkbox" [checked]="isSelected(item)"></mat-checkbox>
                     <div class="mobile-card-header">
                         <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" />
                         <p class="item-description"><b>{{ item.Description }}</b></p>

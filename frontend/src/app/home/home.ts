@@ -22,6 +22,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { LensoPrice } from '../models/lenso_price';
+import jsPDF from 'jspdf';
+import autoTable, { CellHookData } from 'jspdf-autotable';
 
 @Component({
   selector: 'app-home',
@@ -42,7 +44,7 @@ export class Home implements OnInit {
   isSet: boolean = false;
   showCost: boolean = false;
   showPrice: boolean = false;
-  showOOS: boolean = true;
+  showOOS: boolean = false;
   isMobileView: boolean = true;
   isTabletView: boolean = false;
 
@@ -317,6 +319,8 @@ export class Home implements OnInit {
     let selectedPCDs: string[] = this.selectedPCD.value || [];
     let selectedType: string = this.selectedType;
 
+    this.selectedItems = [];
+
     const pcdIndex = selectedPCDs.indexOf("all-pcd");
     if (pcdIndex > -1) {
       selectedPCDs.splice(pcdIndex, 1);
@@ -370,32 +374,132 @@ export class Home implements OnInit {
   }
 
   async shareSelectedImages() {
-    console.log(!navigator.canShare)
-    console.log(!navigator.canShare({ files: [] }))
-    if (!navigator.canShare || !navigator.canShare({ files: [] })) {
-      alert("Sharing images is not supported on this device.");
-      return;
+    const imageFiles: File[] = [];
+
+    for (const item of this.selectedItems) {
+      if (item.Image.data) {
+        const byteArray = new Uint8Array(item.Image.data);
+        const blob = new Blob([byteArray], { type: 'image/jpeg' });
+        const file = new File([blob], 'rim.jpg', { type: 'image/jpeg' });
+        imageFiles.push(file);
+      }
     }
 
-    const files: File[] = this.selectedItems.map((item, index) =>
-      this.convertImageToFile(item.Image, `${item.ItemCode}.png`)
-    );
-    console.log('Can share files:', navigator.canShare({ files }));
-
-    try {
-      await navigator.share({
-        title: 'Check out these wheels!',
-        files,
-        text: 'Here are some rims you might like.',
-      });
-    } catch (err) {
-      console.error('Sharing failed:', err);
+    if (navigator.canShare && navigator.canShare({ files: imageFiles })) {
+      try {
+        await navigator.share({
+          title: '',
+          text: '',
+          files: imageFiles,
+        });
+      } catch (err) {
+        console.error('Sharing failed:', err);
+      }
+    } else {
+      alert('Web Share API is not supported or cannot share these files.');
     }
   }
 
-  convertImageToFile(imageObj: { type: string; data: number[] }, filename: string): File {
-    const byteArray = new Uint8Array(imageObj.data);
-    const blob = new Blob([byteArray], { type: imageObj.type });
-    return new File([blob], filename, { type: imageObj.type });
+  selectAll() {
+    if (this.selectedItems.length > 0) {
+      this.selectedItems = [];
+      return;
+    }
+
+    var itemsToSelect: LensoItem[] = this.filteredItems();
+    if (!this.showOOS) itemsToSelect = itemsToSelect.filter((item: LensoItem) => item.StockQty > 0);
+
+    itemsToSelect.forEach((item: LensoItem) => {
+      this.selectedItems.push(item);
+    });
+  }
+
+  async exportToPDF() {
+    const doc = new jsPDF();
+    const tableBody: any[] = [];
+
+    const base64Images: string[] = this.selectedItems.map((item: LensoItem) => {
+      const byteArray = new Uint8Array(item.Image.data);
+      const binary = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+      const base64 = btoa(binary);
+      return `data:image/png;base64,${base64}`;
+    });
+
+    // Build table rows with image + description + weight
+    this.selectedItems.forEach((item: LensoItem) => {
+      const nameWithWeight = `${item.Description || 'Unnamed'}\nWeight: ${item.Weight || ''}`;
+      tableBody.push([
+        '',               // image placeholder
+        nameWithWeight
+      ]);
+    });
+
+    autoTable(doc, {
+      head: [['Image', 'Detail']],
+      body: tableBody,
+      didDrawCell: (data: CellHookData) => {
+        const colIndex = data.column.index;
+        const rowIndex = data.row.index;
+
+        if (colIndex === 0 && data.cell.raw === '') {
+          const imgData = base64Images[rowIndex];
+          doc.addImage(
+            imgData,
+            'PNG',
+            data.cell.x + 2,
+            data.cell.y + 2,
+            60,
+            60
+          );
+        }
+      },
+      styles: {
+        minCellHeight: 65,
+        lineColor: [255, 255, 255],
+        lineWidth: 0.25,
+      },
+      headStyles: {
+        fillColor: 'black',
+        textColor: 255,
+        fontSize: 14,
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle',
+        minCellHeight: 15,
+      },
+      bodyStyles: {
+        valign: 'middle',
+        fontSize: 12,
+        lineColor: [255, 255, 255],
+        lineWidth: 0.25,
+      },
+      columnStyles: {
+        0: { cellWidth: 65 },
+        1: { cellWidth: 'auto' },
+      },
+    });
+
+    const blobUrl = doc.output('bloburl');
+    window.open(blobUrl, '_blank');
+
+    // const pdfBlob = doc.output('blob');
+    // const pdfFile = new File([pdfBlob], 'lenso-malaysia-specified-catalogue.pdf', { type: 'application/pdf' });
+
+    // // Mobile (iOS/Android): share with Web Share API
+    // if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+    //   try {
+    //     await navigator.share({
+    //       title: 'Selected Wheels PDF',
+    //       text: 'Here is the selected wheel list.',
+    //       files: [pdfFile],
+    //     });
+    //   } catch (err) {
+    //     console.error('Sharing failed:', err);
+    //   }
+    // } else {
+    //   // Desktop fallback: open in new tab
+    //   const blobUrl = doc.output('bloburl');
+    //   window.open(blobUrl, '_blank');
+    // }
   }
 }

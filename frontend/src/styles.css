@@ -17,6 +17,9 @@ body {
     --mat-sys-surface-tint: #a01b1f !important;
     --mat-sys-primary-container: #ffd7d7 !important;
     --mat-sys-primary-fixed: #ffd7d7 !important;
+    --mat-form-field-filled-focus-active-indicator-color: #a01b1f !important;
+    --mat-form-field-filled-focus-label-text-color: #a01b1f !important;
+    --mat-option-selected-state-label-text-color: #a01b1f !important;
 }
 
 body {
@@ -77,4 +80,24 @@ mat-divider {
 
 .mat-expansion-panel-header-description {
     justify-content: space-between !important;
+}
+
+.mat-mdc-menu-item-text {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.mat-mdc-unelevated-button:not(:disabled),
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked,
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-indeterminate {
+    background-color: #a01b1f !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-select-arrow {
+    color: #a01b1f !important;
+}
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input {
+    caret-color: #a01b1f !important;
 }

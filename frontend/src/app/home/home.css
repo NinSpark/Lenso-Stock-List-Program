@@ -114,6 +114,7 @@ table {
 
   .mobile-card-header {
     text-align: center;
+    padding: 0 40px;
   }
 
   table {
@@ -189,6 +190,15 @@ table {
     background-color: rgba(176, 176, 176, 0.2);
     box-shadow: 0 0 8px rgba(181, 63, 63, 0.4);
     transition: border 0.1s, box-shadow 0.1s;
+  }
+
+  .item-card-checkbox {
+    position: absolute;
+    top: 0;
+    right: 0;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 }
 
