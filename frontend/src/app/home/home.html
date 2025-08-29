@@ -22,10 +22,20 @@
                 <span>Share PDF</span>
             </button>
             <button mat-menu-item (click)="selectAll()">
-                <mat-icon *ngIf="selectedItems.length == 0">playlist_add_check</mat-icon>
+                <!-- <mat-icon *ngIf="selectedItems.length == 0">playlist_add_check</mat-icon>
                 <span *ngIf="selectedItems.length == 0">Select All</span>
                 <mat-icon *ngIf="selectedItems.length > 0">playlist_remove</mat-icon>
-                <span *ngIf="selectedItems.length > 0">Deselect All</span>
+                <span *ngIf="selectedItems.length > 0">Deselect All</span> -->
+                <ng-container>
+                    @if (selectedItems.length == 0) {
+                    <mat-icon>playlist_add_check</mat-icon>
+                    <span>Select All</span>
+                    }
+                    @else if (selectedItems.length > 0) {
+                    <mat-icon>playlist_remove</mat-icon>
+                    <span>Deselect All</span>
+                    }
+                </ng-container>
             </button>
         </mat-menu>
     </div>
@@ -160,9 +170,10 @@
                         <div class="display-flex">
                             <mat-spinner *ngIf="loadingMap[item.ItemCode]" diameter="90"
                                 style="margin: 10px 0;"></mat-spinner>
-                            <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" width="200"
+                            <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]"
+                                [src]="imageUrlMap[item.ItemCode] || 'assets/image-not-found.png'" width="200"
                                 (load)="onImageLoad(item.ItemCode)" (error)="onImageError(item.ItemCode)"
-                                alt="Item Image" />
+                                alt="Item Image" loading="lazy" />
                         </div>
                     </td>
                 </ng-container>
@@ -207,7 +218,7 @@
                 <ng-container matColumnDef="StockQty">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by qty">Qty</th>
                     <td mat-cell *matCellDef="let item">
-                        <div *ngIf="item.StockQty == 0">
+                        <!-- <div *ngIf="item.StockQty == 0">
                             <span>{{ item.StockQty }}</span>
                         </div>
                         <div *ngIf="item.StockQty <= 7 && item.StockQty > 0">
@@ -217,6 +228,23 @@
                         <div *ngIf="item.StockQty > 7">
                             <span>{{ item.StockQty }}</span>
                             <span *ngIf="isSet"> ({{ calculateSet(item.StockQty) }} sets)</span>
+                        </div> -->
+                        <div>
+                            @if(item.StockQty == 0) {
+                            <span>{{ item.StockQty }}</span>
+                            }
+                            @else if (item.StockQty <= 7 && item.StockQty> 0) {
+                                <span>{{ item.StockQty }}</span>
+                                @if(isSet) {
+                                <span> ({{ calculateSet(item.StockQty) }} set)</span>
+                                }
+                                }
+                                @else if (item.StockQty > 7) {
+                                <span>{{ item.StockQty }}</span>
+                                @if(isSet) {
+                                <span> ({{ calculateSet(item.StockQty) }} sets)</span>
+                                }
+                                }
                         </div>
                     </td>
                 </ng-container>
@@ -264,10 +292,18 @@
 
         <ng-container *ngFor="let item of filteredItems()">
             <ng-container *ngIf="showOOS || item.StockQty > 0">
-                <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [ngClass]="{'selected-card': isSelected(item)}">
-                    <mat-checkbox class="item-card-checkbox" [checked]="isSelected(item)"></mat-checkbox>
+                <mat-card [id]="item.ItemCode" (click)="toggleCard(item)"
+                    [ngClass]="{'selected-card': isSelected(item)}">
+                    <div class="card-header-checkbox" [ngClass]="{'highlight-header': isSelected(item)}">
+                        <mat-checkbox [checked]="isSelected(item)"></mat-checkbox>
+                        <mat-icon class="placeholder-check" fontIcon="check"
+                            [style.display]="isSelected(item) ? 'none' : 'inline-block'"></mat-icon>
+                    </div>
                     <div class="mobile-card-header">
-                        <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" />
+                        <!-- <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image
+                            [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" loading="lazy" /> -->
+                        <img class="wheel-image" [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                            (error)="onImgError($event)" loading="lazy">
                         <p class="item-description"><b>{{ item.Description }}</b></p>
                         <p class="code-name">{{ item.ItemCode }}</p>
                     </div>
@@ -339,7 +375,8 @@
         <div class="tablet-card-grid">
             <mat-card *ngFor="let item of filteredItems()">
                 <div class="card-top-section">
-                    <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" />
+                    <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image loading="lazy"
+                        [src]="imageUrlMap[item.ItemCode] || 'assets/image-not-found.png'" alt="Item Image" />
                     <h3>{{ item.ItemCode }}</h3>
                     <p class="item-description">{{ item.Description }}</p>
                 </div>

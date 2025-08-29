@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef, Directive } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -95,8 +95,15 @@ export class Home implements OnInit {
     private router: Router,
     private renderer: Renderer2,
     private cdRef: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+    @Inject(PLATFORM_ID) private platformId: Object,
+    { nativeElement }: ElementRef<HTMLImageElement>
+  ) {
+    const supports = 'loading' in HTMLImageElement.prototype;
+
+    if (supports) {
+      nativeElement.setAttribute('loading', 'lazy');
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
@@ -427,9 +434,11 @@ export class Home implements OnInit {
 
     // Build table rows with image + description + weight
     this.selectedItems.forEach((item: LensoItem) => {
-      const nameWithWeight = `${item.Description || 'Unnamed'}\nWeight: ${item.Weight || ''}`;
+      const name = item.Description?.toUpperCase() || 'UNNAMED';
+      const weightText = item.Weight !== -1 ? `Weight: ${item.Weight} kg` : 'Weight: N/A';
+      const nameWithWeight = `${name}\n\n${weightText}`;
       tableBody.push([
-        '',               // image placeholder
+        '',
         nameWithWeight
       ]);
     });
@@ -461,17 +470,18 @@ export class Home implements OnInit {
       headStyles: {
         fillColor: 'black',
         textColor: 255,
-        fontSize: 14,
+        fontSize: 12,
         fontStyle: 'bold',
         halign: 'center',
         valign: 'middle',
-        minCellHeight: 15,
+        minCellHeight: 10,
       },
       bodyStyles: {
         valign: 'middle',
         fontSize: 12,
         lineColor: [255, 255, 255],
         lineWidth: 0.25,
+        cellPadding: 8
       },
       columnStyles: {
         0: { cellWidth: 65 },
@@ -501,5 +511,11 @@ export class Home implements OnInit {
     //   const blobUrl = doc.output('bloburl');
     //   window.open(blobUrl, '_blank');
     // }
+  }
+
+  onImgError(event: Event) {
+    const element = event.target as HTMLImageElement;
+    element.onerror = null; // prevent infinite loop
+    element.src = 'assets/image-not-found.png';
   }
 }

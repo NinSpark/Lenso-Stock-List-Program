@@ -101,3 +101,14 @@ mat-divider {
 .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input {
     caret-color: #a01b1f !important;
 }
+
+mat-card .mdc-checkbox .mdc-checkbox__background {
+  background-color: transparent !important; /* grey background when unchecked */
+  border-color: transparent !important;
+}
+
+mat-card .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+mat-card .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+    border-color: transparent !important;
+    background-color: transparent !important;
+}

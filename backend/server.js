@@ -3,6 +3,7 @@ const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
 const { Pool } = require('pg');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +11,7 @@ const port = process.env.PORT || 3000;
 // Enable CORS for Angular frontend
 app.use(cors());
 app.use(express.json());
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Database Configuration
 const kaiShenConfig = {
