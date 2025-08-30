@@ -12,6 +12,13 @@
   align-items: center;
 }
 
+img.fallback {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .main-table-div {
   overflow: auto;
 }
@@ -30,7 +37,7 @@ table {
 
 .body {
   width: calc(100% - 20px);
-  padding: 10px;
+  margin: 10px;
 }
 
 .filter-select-options,
@@ -54,11 +61,31 @@ table {
   height: 60vh;
 }
 
+.loading-share-container {
+  position: fixed;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.7);
+}
+
 /* mobile css */
 @media only screen and (max-width: 600px) {
   .wheel-image {
-    max-height: 250px;
-    object-fit: contain;
+    height: 250px;
+    object-fit: cover;
+  }
+
+  .wheel-image-loading {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 250px;
   }
 
   .filter-select-options,

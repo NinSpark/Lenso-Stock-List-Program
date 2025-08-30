@@ -1,5 +1,8 @@
-<div class="body">
+<div class="loading-share-container" *ngIf="isLoadingShare">
+    <mat-spinner diameter="100"></mat-spinner>
+</div>
 
+<div class="body">
     <div class="first-row">
         <mat-form-field class="search-form-field">
             <mat-label>Search Wheel Keyword</mat-label>
@@ -170,10 +173,9 @@
                         <div class="display-flex">
                             <mat-spinner *ngIf="loadingMap[item.ItemCode]" diameter="90"
                                 style="margin: 10px 0;"></mat-spinner>
-                            <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]"
-                                [src]="imageUrlMap[item.ItemCode] || 'assets/image-not-found.png'" width="200"
-                                (load)="onImageLoad(item.ItemCode)" (error)="onImageError(item.ItemCode)"
-                                alt="Item Image" loading="lazy" />
+                            <img class="wheel-image"
+                                [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                                (error)="onImgError($event, item)" loading="lazy">
                         </div>
                     </td>
                 </ng-container>
@@ -300,10 +302,16 @@
                             [style.display]="isSelected(item) ? 'none' : 'inline-block'"></mat-icon>
                     </div>
                     <div class="mobile-card-header">
-                        <!-- <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image
-                            [src]="imageUrlMap[item.ItemCode] || 'assets/Image-not-found.png'" alt="Item Image" loading="lazy" /> -->
-                        <img class="wheel-image" [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
-                            (error)="onImgError($event)" loading="lazy">
+                        <div class="image-container">
+                            <div *ngIf="!item.imageLoaded" class="wheel-image-loading">
+                                <mat-spinner diameter="70"></mat-spinner>
+                            </div>
+
+                            <img class="wheel-image" [style.height]="item.imageLoaded ? '250px' : '0'"
+                                [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                                (load)="onImgLoad(item)" (error)="onImgError($event, item)" loading="lazy">
+                        </div>
+
                         <p class="item-description"><b>{{ item.Description }}</b></p>
                         <p class="code-name">{{ item.ItemCode }}</p>
                     </div>
@@ -375,8 +383,9 @@
         <div class="tablet-card-grid">
             <mat-card *ngFor="let item of filteredItems()">
                 <div class="card-top-section">
-                    <img *ngIf="imageUrlMap && imageUrlMap[item.ItemCode]" mat-card-image loading="lazy"
-                        [src]="imageUrlMap[item.ItemCode] || 'assets/image-not-found.png'" alt="Item Image" />
+                    <img class="wheel-image"
+                        [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                        (error)="onImgError($event, item)" loading="lazy">
                     <h3>{{ item.ItemCode }}</h3>
                     <p class="item-description">{{ item.Description }}</p>
                 </div>
@@ -405,10 +414,5 @@
 
     <div *ngIf="fullStockList.length === 0">
         No stock entries available.
-    </div>
-
-    <!-- Spinner (optional) -->
-    <div *ngIf="isLoading" style="margin-top: 16px;">
-        <mat-spinner diameter="40"></mat-spinner>
     </div>
 </div>

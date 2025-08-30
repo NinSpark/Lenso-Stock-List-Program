@@ -33,6 +33,7 @@ import autoTable, { CellHookData } from 'jspdf-autotable';
 })
 export class Home implements OnInit {
   isLoading: boolean = false;
+  isLoadingShare: boolean = false;
   isLensoDB: boolean = true;
 
   @ViewChild('searchbar') searchbar!: ElementRef;
@@ -53,7 +54,6 @@ export class Home implements OnInit {
   selectedType: string = "all-type";
   selectedSeries: string[] = [];
 
-  imageUrlMap: { [itemCode: string]: string } = {};
   loadingMap: { [itemCode: string]: boolean } = {};
   selectedItems: LensoItem[] = [];
 
@@ -94,7 +94,7 @@ export class Home implements OnInit {
     private stockService: StockService,
     private router: Router,
     private renderer: Renderer2,
-    private cdRef: ChangeDetectorRef,
+    private cd: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     { nativeElement }: ElementRef<HTMLImageElement>
   ) {
@@ -106,7 +106,7 @@ export class Home implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.isLoading = true;
+    this.isLoadingShare = true;
 
     if (isPlatformBrowser(this.platformId)) {
       this.checkScreen();
@@ -121,7 +121,7 @@ export class Home implements OnInit {
     } catch (error) {
       console.error('Error during initialization:', error);
     } finally {
-      this.isLoading = false;
+      this.isLoadingShare = false;
     }
   }
 
@@ -195,10 +195,6 @@ export class Home implements OnInit {
     try {
       this.stockService.getItemList(this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
-
-        if (isPlatformBrowser(this.platformId)) {
-          this.generateBlobUrls(data);
-        }
 
         this.fetchPriceAndWeight();
       });
@@ -341,10 +337,6 @@ export class Home implements OnInit {
       this.stockService.getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB).subscribe((data: LensoItem[]) => {
         this.fullItemList.data = data;
 
-        if (isPlatformBrowser(this.platformId)) {
-          this.generateBlobUrls(data);
-        }
-
         this.fetchPriceAndWeight();
 
         console.log(this.fullItemList.data);
@@ -353,57 +345,6 @@ export class Home implements OnInit {
       console.error('Error during filtering:', error);
     } finally {
       this.isLoading = false;
-    }
-  }
-
-  generateBlobUrls(data: LensoItem[]) {
-    for (const url of Object.values(this.imageUrlMap || {})) {
-      URL.revokeObjectURL(url);
-    }
-
-    this.imageUrlMap = {};
-    data.forEach(item => {
-      if (item.Image && item.Image.data && Array.isArray(item.Image.data)) {
-        const byteArray = new Uint8Array(item.Image.data);
-        const blob = new Blob([byteArray], { type: 'image/jpeg' });
-        const url = URL.createObjectURL(blob);
-        this.imageUrlMap[item.ItemCode] = url;
-      }
-    });
-  }
-
-  onImageLoad(itemCode: string) {
-    this.loadingMap[itemCode] = false;
-  }
-
-  onImageError(itemCode: string) {
-    this.loadingMap[itemCode] = false;
-  }
-
-  async shareSelectedImages() {
-    const imageFiles: File[] = [];
-
-    for (const item of this.selectedItems) {
-      if (item.Image.data) {
-        const byteArray = new Uint8Array(item.Image.data);
-        const blob = new Blob([byteArray], { type: 'image/jpeg' });
-        const file = new File([blob], 'rim.jpg', { type: 'image/jpeg' });
-        imageFiles.push(file);
-      }
-    }
-
-    if (navigator.canShare && navigator.canShare({ files: imageFiles })) {
-      try {
-        await navigator.share({
-          title: '',
-          text: '',
-          files: imageFiles,
-        });
-      } catch (err) {
-        console.error('Sharing failed:', err);
-      }
-    } else {
-      alert('Web Share API is not supported or cannot share these files.');
     }
   }
 
@@ -421,101 +362,131 @@ export class Home implements OnInit {
     });
   }
 
-  async exportToPDF() {
-    const doc = new jsPDF();
-    const tableBody: any[] = [];
+  async shareSelectedImages() {
+    this.isLoadingShare = true;
+    const imageFiles: File[] = [];
 
-    const base64Images: string[] = this.selectedItems.map((item: LensoItem) => {
-      const byteArray = new Uint8Array(item.Image.data);
-      const binary = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
-      const base64 = btoa(binary);
-      return `data:image/png;base64,${base64}`;
-    });
+    for (const item of this.selectedItems) {
+      const imageUrl = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
 
-    // Build table rows with image + description + weight
-    this.selectedItems.forEach((item: LensoItem) => {
-      const name = item.Description?.toUpperCase() || 'UNNAMED';
-      const weightText = item.Weight !== -1 ? `Weight: ${item.Weight} kg` : 'Weight: N/A';
-      const nameWithWeight = `${name}\n\n${weightText}`;
-      tableBody.push([
-        '',
-        nameWithWeight
-      ]);
-    });
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
 
-    autoTable(doc, {
-      head: [['Image', 'Detail']],
-      body: tableBody,
-      didDrawCell: (data: CellHookData) => {
-        const colIndex = data.column.index;
-        const rowIndex = data.row.index;
+        const fileName = `${item.ItemCode}.png`;
+        const file = new File([blob], fileName, { type: blob.type || 'image/png' });
 
-        if (colIndex === 0 && data.cell.raw === '') {
-          const imgData = base64Images[rowIndex];
-          doc.addImage(
-            imgData,
-            'PNG',
-            data.cell.x + 2,
-            data.cell.y + 2,
-            60,
-            60
-          );
-        }
-      },
-      styles: {
-        minCellHeight: 65,
-        lineColor: [255, 255, 255],
-        lineWidth: 0.25,
-      },
-      headStyles: {
-        fillColor: 'black',
-        textColor: 255,
-        fontSize: 12,
-        fontStyle: 'bold',
-        halign: 'center',
-        valign: 'middle',
-        minCellHeight: 10,
-      },
-      bodyStyles: {
-        valign: 'middle',
-        fontSize: 12,
-        lineColor: [255, 255, 255],
-        lineWidth: 0.25,
-        cellPadding: 8
-      },
-      columnStyles: {
-        0: { cellWidth: 65 },
-        1: { cellWidth: 'auto' },
-      },
-    });
+        imageFiles.push(file);
+      } catch (err) {
+        console.error('Failed to fetch image:', imageUrl, err);
+      }
+    }
 
-    const blobUrl = doc.output('bloburl');
-    window.open(blobUrl, '_blank');
+    if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
+      try {
+        await navigator.share({
+          title: '',
+          text: '',
+          files: imageFiles,
+        });
+      } catch (err) {
+        console.error('Sharing failed:', err);
+      }
+    } else {
+      alert('Web Share API is not supported or cannot share these files.');
+    }
 
-    // const pdfBlob = doc.output('blob');
-    // const pdfFile = new File([pdfBlob], 'lenso-malaysia-specified-catalogue.pdf', { type: 'application/pdf' });
-
-    // // Mobile (iOS/Android): share with Web Share API
-    // if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-    //   try {
-    //     await navigator.share({
-    //       title: 'Selected Wheels PDF',
-    //       text: 'Here is the selected wheel list.',
-    //       files: [pdfFile],
-    //     });
-    //   } catch (err) {
-    //     console.error('Sharing failed:', err);
-    //   }
-    // } else {
-    //   // Desktop fallback: open in new tab
-    //   const blobUrl = doc.output('bloburl');
-    //   window.open(blobUrl, '_blank');
-    // }
+    this.isLoadingShare = false;
   }
 
-  onImgError(event: Event) {
-    const element = event.target as HTMLImageElement;
-    element.onerror = null; // prevent infinite loop
-    element.src = 'assets/image-not-found.png';
+  async exportToPDF() {
+    this.isLoadingShare = true;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const marginX = 4;
+    const marginY = 4;
+    const gutterX = 4;
+    const gutterY = 4;
+
+    const imgWidth = (pageWidth - marginX * 2 - gutterX) / 2;
+    const imgHeight = (pageHeight - marginY * 2 - gutterY * 3) / 4;
+
+    let x = marginX;
+    let y = marginY;
+    let itemsOnPage = 0;
+
+    for (let i = 0; i < this.selectedItems.length; i++) {
+      const item = this.selectedItems[i];
+      const imgSrc = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
+
+      try {
+        const base64Img = await this.getBase64FromUrl(imgSrc);
+        doc.addImage(base64Img, 'PNG', x, y, imgWidth, imgHeight);
+      } catch (err) {
+        console.error('Error loading image for PDF:', item.ItemCode, err);
+      }
+
+      if (x === marginX) {
+        x += imgWidth + gutterX;
+      } else {
+        x = marginX;
+        y += imgHeight + gutterY;
+      }
+
+      itemsOnPage++;
+
+      if (itemsOnPage === 8 && i < this.selectedItems.length - 1) {
+        doc.addPage();
+        x = marginX;
+        y = marginY;
+        itemsOnPage = 0;
+      }
+    }
+
+    const pdfBlob = doc.output('blob');
+    const pdfFile = new File([pdfBlob], 'lenso-selected-wheel-catalogue.pdf', { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        await navigator.share({
+          title: 'Selected Wheels PDF',
+          files: [pdfFile],
+        });
+      } catch (err) {
+        console.error('Sharing failed:', err);
+      }
+    } else {
+      const blobUrl = doc.output('bloburl');
+      window.open(blobUrl, '_blank');
+    }
+
+    this.isLoadingShare = false;
+  }
+
+  private async getBase64FromUrl(url: string): Promise<string> {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  onImgLoad(item: any) {
+    item.imageLoaded = true;
+    this.cd.detectChanges();
+  }
+
+  onImgError(event: Event, item: any) {
+    item.imageLoaded = true;
+    (event.target as HTMLImageElement).src = 'assets/image-not-found.png';
+    const el = event.target as HTMLElement;
+    el.style.userSelect = 'none';
+    (el.style as any).webkitUserSelect = 'none';
+    (el.style as any).msUserSelect = 'none';
+    (el.style as any).MozUserSelect = 'none';
   }
 }
