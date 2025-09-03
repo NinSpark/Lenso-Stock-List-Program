@@ -23,18 +23,6 @@ img.fallback {
   overflow: auto;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  background-color: white;
-
-  th {
-    background-color: rgb(163, 37, 37);
-    color: white;
-  }
-}
-
 .body {
   width: calc(100% - 20px);
   margin: 10px;
@@ -73,18 +61,159 @@ table {
   background: rgba(255, 255, 255, 0.7);
 }
 
+.item-selected-message {
+  margin: 10px 0 4px 0;
+}
+
+mat-expansion-panel {
+  margin-top: 10px;
+}
+
+.placeholder-check {
+  position: absolute;
+  scale: 0.8;
+}
+
+.search-form-field,
+.filter-select-options mat-form-field,
+.checkbox-options mat-checkbox {
+  width: 100%;
+}
+
+.qty-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.current-qty,
+.current-price {
+  width: 100%;
+  height: 60px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid black;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #171c22;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 4px 0;
+}
+
+mat-card {
+  padding-bottom: 10px;
+  border: 2px solid #797979;
+  border-radius: 10px !important;
+
+  img {
+    width: 100%;
+  }
+}
+
+.card-header-checkbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 2px solid #797979;
+  border-radius: 6px 6px 0 0;
+}
+
+.code-name {
+  font-size: 12px;
+  color: #797979;
+  margin: 0;
+}
+
+.item-description {
+  margin: 0;
+  font-size: 14px;
+  padding: 8px 20px 0 20px;
+}
+
+.price-section {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  text-align: center;
+}
+
+.set-div {
+  font-size: 10px;
+  color: #797979;
+}
+
+.info-details {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.type-info,
+.size-info,
+.pcd-info,
+.weight-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.first-row {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  gap: 4px;
+}
+
+.more-option-button {
+  margin: auto;
+}
+
+.selected-card {
+  border: 2px solid #a01b1f;
+  background-color: rgba(176, 176, 176, 0.2);
+  box-shadow: 0 0 8px rgba(181, 63, 63, 0.4);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.highlight-header {
+  background-color: #a01b1f;
+  transition: all 0.2s;
+  border-color: #a01b1f;
+}
+
+.item-card-checkbox {
+  position: absolute;
+  top: 0;
+  right: 0;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.wheel-image {
+  object-fit: cover;
+}
+
+.toggle-card-checkbox {
+  cursor: default;
+}
+
 /* mobile css */
 @media only screen and (max-width: 600px) {
   .wheel-image {
     height: 250px;
-    object-fit: cover;
   }
 
   .wheel-image-loading {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 250px;
   }
 
@@ -95,266 +224,75 @@ table {
     width: 100%;
   }
 
-  mat-expansion-panel {
-    margin-top: 10px;
-  }
-
-  .placeholder-check {
-    position: absolute;
-    scale: 0.8;
-  }
-
-  .filter-select-options mat-form-field,
-  .checkbox-options mat-checkbox {
-    width: 100%;
-  }
-
-  .search-form-field {
-    width: 100%;
-  }
-
-  .qty-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .current-qty,
-  .current-price {
-    width: 100%;
-    height: 60px;
-    text-align: center;
-    border-radius: 12px;
-    border: 1px solid black;
-    font-size: 1.6rem;
-    font-weight: bold;
-    color: #171c22;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 8px 0 4px 0;
-  }
-
   mat-card {
-    padding-bottom: 10px;
     margin: 4px 0 16px 0;
-    border: 2px solid #797979;
-    border-radius: 10px !important;
-
-    img {
-      width: 100%;
-    }
-  }
-
-  .card-header-checkbox {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4px 0;
-    border-bottom: 2px solid #797979;
-    border-radius: 6px 6px 0 0;
-  }
-
-  .mobile-card-header {
-    text-align: center;
-  }
-
-  table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  td,
-  th {
-    text-align: center;
-    padding: 4px;
-    font-size: 14px;
-    background-color: transparent !important;
-    color: black !important;
-  }
-
-  .code-name {
-    font-size: 12px;
-    color: #797979;
-    margin: 0;
-  }
-
-  .item-description {
-    margin: 0;
-    font-size: 14px;
-    padding: 8px 20px 0 20px;
-  }
-
-  .price-section {
-    margin-top: 12px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    text-align: center;
-  }
-
-  .set-div {
-    font-size: 10px;
-    color: #797979;
-  }
-
-  .info-details {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin: 16px 0;
-  }
-
-  .type-info,
-  .size-info,
-  .pcd-info,
-  .weight-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .first-row {
-    display: flex;
-    justify-content: center;
-    align-self: center;
-    gap: 4px;
-  }
-
-  .more-option-button {
-    margin: auto;
-  }
-
-  .selected-card {
-    border: 2px solid #a01b1f;
-    background-color: rgba(176, 176, 176, 0.2);
-    box-shadow: 0 0 8px rgba(181, 63, 63, 0.4);
-    transition: border 0.1s, box-shadow 0.1s;
-  }
-
-  .highlight-header {
-    background-color: #a01b1f;
-    transition: all 0.3s;
-    border-color: #a01b1f;
-  }
-
-  .item-card-checkbox {
-    position: absolute;
-    top: 0;
-    right: 0;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 }
 
 /* tablet css */
 @media only screen and (min-width: 601px) and (max-width: 960px) {
-
-  .filter-select-options,
-  .checkbox-options {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 16px;
+  .tablet-card-div {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 12px;
   }
 
-  .filter-select-options mat-form-field,
-  .checkbox-options mat-checkbox {
-    width: 48%;
+  .wheel-image {
+    height: 230px;
+  }
+
+  .wheel-image-loading {
+    width: 100%;
+    height: 230px;
+  }
+
+  .filter-select-options {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .checkbox-options {
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
   }
 
   mat-card {
-    margin-bottom: 16px;
+    margin: 0;
+  }
+}
+
+/* desktop css */
+@media only screen and (min-width: 960px) {
+  .desktop-card-div {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    gap: 12px;
   }
 
-  .item-description {
-    text-align: center;
-    font-size: 16px;
+  .wheel-image {
+    height: 230px;
   }
 
-  .info-qty-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
+  .wheel-image-loading {
+    width: 100%;
+    height: 230px;
   }
 
-  .left-info p {
-    font-size: 15px;
-    margin: 6px 0;
-  }
-
-  .qty-box-container {
-    display: flex;
+  .filter-select-options {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    width: 100%;
   }
 
-  .qty-label {
-    font-size: 15px;
-    margin-bottom: 4px;
+  .checkbox-options {
+    flex-direction: row;
+    align-items: stretch;
+    width: 50%;
   }
 
-  .qty-box {
-    min-width: 30px;
-    height: 30px;
-    font-size: 20px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-  }
-
-  .card-top-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2px;
-    text-align: center;
-  }
-
-  .card-top-section img {
-    width: 180px;
-  }
-
-  .card-top-section h3 {
-    text-align: center;
-  }
-
-  .card-top-section .item-description {
-    margin-top: 0;
-    text-align: center;
-    font-size: 15px;
-  }
-
-  .pcs-price-text {
-    font-size: 17px;
-  }
-
-  .tablet-card-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .tablet-card-grid mat-card {
-    flex: 0 0 50%;
-  }
-
-  table,
-  th,
-  td {
-    font-size: 13px;
-  }
-
-  img {
-    width: 120px;
+  mat-card {
+    margin: 0;
   }
 }

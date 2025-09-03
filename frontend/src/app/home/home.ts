@@ -1,9 +1,7 @@
 import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef, Directive } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { lastValueFrom } from 'rxjs';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StockService } from '../../services/stock.service';
 import { LensoStock } from '../models/lenso_stock';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,7 +21,6 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { LensoPrice } from '../models/lenso_price';
 import jsPDF from 'jspdf';
-import autoTable, { CellHookData } from 'jspdf-autotable';
 
 @Component({
   selector: 'app-home',
@@ -92,8 +89,6 @@ export class Home implements OnInit {
 
   constructor(
     private stockService: StockService,
-    private router: Router,
-    private renderer: Renderer2,
     private cd: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     { nativeElement }: ElementRef<HTMLImageElement>
@@ -151,9 +146,11 @@ export class Home implements OnInit {
   }
 
   checkScreen() {
+    this.isLoadingShare = true;
     const width = window.innerWidth;
     this.isMobileView = width <= 600;
     this.isTabletView = width > 600 && width <= 960;
+    this.isLoadingShare = false;
   }
 
   resetFilters(): void {
@@ -173,7 +170,7 @@ export class Home implements OnInit {
     if (index >= 0) {
       this.selectedItems.splice(index, 1);
     } else {
-      this.selectedItems.push(item);
+      if (item.imageExist) this.selectedItems.push(item);
     }
   }
 
@@ -475,8 +472,12 @@ export class Home implements OnInit {
     });
   }
 
-  onImgLoad(item: any) {
+  onImgLoad(event: Event, item: any) {
     item.imageLoaded = true;
+    item.imageExist = true;
+    if ((event.target as HTMLImageElement).src.includes('image-not-found.png')) {
+      item.imageExist = false;
+    }
     this.cd.detectChanges();
   }
 

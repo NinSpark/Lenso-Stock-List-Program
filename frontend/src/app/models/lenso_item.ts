@@ -60,7 +60,8 @@ export class LensoItem {
     public Cost: number,
     public Price: number,
     public Weight: number,
-    public imageLoaded: boolean = false
+    public imageLoaded: boolean = false,
+    public imageExist: boolean = false
   ) { }
 }
 
