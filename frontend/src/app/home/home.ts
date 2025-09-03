@@ -1,30 +1,18 @@
 import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef, Directive } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { StockService } from '../../services/stock.service';
 import { LensoStock } from '../models/lenso_stock';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { LensoItem } from '../models/lenso_item';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatCardModule } from '@angular/material/card';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { LensoPrice } from '../models/lenso_price';
 import jsPDF from 'jspdf';
+import { MaterialModule } from '../shared/material.module';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, MatDatepickerModule, MatSelectModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatIconModule, MatSlideToggleModule, MatCheckboxModule, MatTableModule, MatSortModule, MatInputModule, MatProgressSpinner, MatCardModule, MatExpansionModule],
+  imports: [MaterialModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
