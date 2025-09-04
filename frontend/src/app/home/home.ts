@@ -9,12 +9,24 @@ import { MatSort } from '@angular/material/sort';
 import { LensoPrice } from '../models/lenso_price';
 import jsPDF from 'jspdf';
 import { MaterialModule } from '../shared/material.module';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-home',
   imports: [MaterialModule],
   templateUrl: './home.html',
-  styleUrl: './home.css'
+  styleUrl: './home.css',
+  animations: [
+    trigger('cardAnim', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-20px)' }))
+      ])
+    ])
+  ]
 })
 export class Home implements OnInit {
   isLoading: boolean = false;
@@ -117,6 +129,10 @@ export class Home implements OnInit {
       item.ItemCode?.toLowerCase().includes(lowerSearch) ||
       item.Description?.toLowerCase().includes(lowerSearch)
     );
+  }
+
+  trackByItemCode(item: any): string {
+    return item.ItemCode;
   }
 
   filteredItemsTable() {

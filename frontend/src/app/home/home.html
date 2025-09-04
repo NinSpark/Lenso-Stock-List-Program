@@ -164,11 +164,11 @@
         <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
         <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
             inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message" *ngIf="selectedItems.length > 0 && !isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
+        <div class="item-selected-message" *ngIf="!isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
 
         <div class="desktop-card-div">
-            <ng-container *ngFor="let item of filteredItems()">
-                <ng-container *ngIf="showOOS || item.StockQty > 0">
+            <ng-container *ngFor="let item of filteredItems(); trackBy: trackByItemCode">
+                <div *ngIf="showOOS || item.StockQty > 0" [@cardAnim]>
                     <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [style.cursor]="item.imageExist ? 'pointer':'default'"
                         [ngClass]="{'selected-card': isSelected(item)}">
                         <div class="card-header-checkbox" [ngClass]="{'highlight-header': isSelected(item)}">
@@ -182,7 +182,7 @@
                                     <mat-spinner diameter="70"></mat-spinner>
                                 </div>
 
-                                <img class="wheel-image" [style.height]="item.imageLoaded ? '230px' : '0'"
+                                <img class="wheel-image" [style.height]="item.imageLoaded ? '280px' : '0'"
                                     [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>
@@ -245,11 +245,11 @@
                             </div>
                         </mat-card-content>
                     </mat-card>
-                </ng-container>
+                </div>
             </ng-container>
         </div>
-        <div class="code-name text-align-center">E.O.F.</div>
-        <mat-divider></mat-divider>
+        <div class="eof text-align-center">E.O.F.</div>
+        <mat-divider class="eof-divider"></mat-divider>
     </ng-container>
 
     <mat-divider style="margin-bottom: 16px;"></mat-divider>
@@ -259,10 +259,10 @@
         <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
         <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
             inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message" *ngIf="selectedItems.length > 0 && !isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
+        <div class="item-selected-message" *ngIf="!isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
 
-        <ng-container *ngFor="let item of filteredItems()">
-            <ng-container *ngIf="showOOS || item.StockQty > 0">
+        <ng-container *ngFor="let item of filteredItems(); trackBy: trackByItemCode">
+                <div *ngIf="showOOS || item.StockQty > 0" [@cardAnim]>
                 <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [style.cursor]="item.imageExist ? 'pointer':'default'"
                     [ngClass]="{'selected-card': isSelected(item)}">
                     <div class="card-header-checkbox" [ngClass]="{'highlight-header': isSelected(item)}">
@@ -337,10 +337,10 @@
                         </div>
                     </mat-card-content>
                 </mat-card>
-            </ng-container>
+            </div>
         </ng-container>
-        <div class="code-name text-align-center">E.O.F.</div>
-        <mat-divider></mat-divider>
+        <div class="eof text-align-center">E.O.F.</div>
+        <mat-divider class="eof-divider"></mat-divider>
     </ng-container>
 
     <!-- Tablet: 2 cards per row -->
@@ -348,11 +348,11 @@
         <div *ngIf="showOOS && !isLoading">Showing {{filteredItems().length}} result(s).</div>
         <div *ngIf="!showOOS && !isLoading">Showing {{inStockCount()}} result(s). {{filteredItems().length -
             inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message" *ngIf="selectedItems.length > 0 && !isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
+        <div class="item-selected-message" *ngIf="!isLoading">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).</div>
 
         <div class="tablet-card-div">
-            <ng-container *ngFor="let item of filteredItems()">
-                <ng-container *ngIf="showOOS || item.StockQty > 0">
+            <ng-container *ngFor="let item of filteredItems(); trackBy: trackByItemCode">
+                <div *ngIf="showOOS || item.StockQty > 0" [@cardAnim]>
                     <mat-card [id]="item.ItemCode" (click)="toggleCard(item)" [style.cursor]="item.imageExist ? 'pointer':'default'"
                         [ngClass]="{'selected-card': isSelected(item)}">
                         <div class="card-header-checkbox" [ngClass]="{'highlight-header': isSelected(item)}">
@@ -366,7 +366,7 @@
                                     <mat-spinner diameter="70"></mat-spinner>
                                 </div>
 
-                                <img class="wheel-image" [style.height]="item.imageLoaded ? '230px' : '0'"
+                                <img class="wheel-image" [style.height]="item.imageLoaded ? '280px' : '0'"
                                     [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>
@@ -429,11 +429,11 @@
                             </div>
                         </mat-card-content>
                     </mat-card>
-                </ng-container>
+                </div>
             </ng-container>
         </div>
-        <div class="code-name text-align-center">E.O.F.</div>
-        <mat-divider></mat-divider>
+        <div class="eof text-align-center">E.O.F.</div>
+        <mat-divider class="eof-divider"></mat-divider>
     </ng-container>
 
     <div *ngIf="fullStockList.length === 0">
