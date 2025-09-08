@@ -88,7 +88,7 @@ app.get('/api/item', async (req, res) => {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
     const request = pool.request();
-    const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
+    const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
 
     const result = await request.query(query);
     res.json(result.recordset);
@@ -137,11 +137,11 @@ app.get('/api/filtered-item', async (req, res) => {
     const pool = await getDBPool(dbType);
 
     // Extract and parse filters
-    const { type, size, pcd } = req.query;
+    const { type, size, pcd, search } = req.query;
     const sizeList = size ? JSON.parse(size) : [];
     const pcdList = pcd ? JSON.parse(pcd) : [];
 
-    let baseQuery = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%'`;
+    let baseQuery = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
     let conditions = [];
     let parameters = {};
 
@@ -151,17 +151,28 @@ app.get('/api/filtered-item', async (req, res) => {
     }
 
     if (sizeList.length > 0) {
-      conditions.push(`(${sizeList.map((_, i) => `LEFT(ItemBrand, CHARINDEX('X', ItemBrand) - 1) = @size${i}`).join(' OR ')})`);
+      conditions.push(
+        `(${sizeList
+          .map((_, i) => `LEFT(ItemBrand, CHARINDEX('X', ItemBrand) - 1) = @size${i}`)
+          .join(' OR ')})`
+      );
       sizeList.forEach((val, i) => {
         parameters[`size${i}`] = val;
       });
     }
 
     if (pcdList.length > 0) {
-      conditions.push(`(${pcdList.map((_, i) => `ItemCategory = @pcd${i}`).join(' OR ')})`);
+      conditions.push(
+        `(${pcdList.map((_, i) => `ItemCategory = @pcd${i}`).join(' OR ')})`
+      );
       pcdList.forEach((val, i) => {
         parameters[`pcd${i}`] = val;
       });
+    }
+
+    if (search && search.trim() !== '') {
+      conditions.push(`(ItemCode LIKE @search OR Description LIKE @search OR ItemType LIKE @search)`);
+      parameters.search = `%${search}%`;
     }
 
     if (conditions.length > 0) {

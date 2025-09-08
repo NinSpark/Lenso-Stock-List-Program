@@ -1,5 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, Renderer2, ViewChild, PLATFORM_ID, Inject, ElementRef, Directive } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, PLATFORM_ID, Inject, ElementRef } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FormControl } from '@angular/forms';
 import { StockService } from '../../services/stock.service';
 import { LensoStock } from '../models/lenso_stock';
@@ -10,6 +10,8 @@ import { LensoPrice } from '../models/lenso_price';
 import jsPDF from 'jspdf';
 import { MaterialModule } from '../shared/material.module';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -35,10 +37,12 @@ export class Home implements OnInit {
 
   @ViewChild('searchbar') searchbar!: ElementRef;
   searchRimText = '';
+  private searchSubject = new Subject<string>();
+  private searchSub: any;
+  shareMsg: string = '';
 
   fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
-  displayedColumns: string[] = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty', 'Cost'];
   isSet: boolean = false;
   showCost: boolean = false;
   showPrice: boolean = false;
@@ -101,6 +105,7 @@ export class Home implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.shareMsg = "Initializing Database...";
     this.isLoadingShare = true;
 
     if (isPlatformBrowser(this.platformId)) {
@@ -108,27 +113,27 @@ export class Home implements OnInit {
       window.addEventListener('resize', this.checkScreen.bind(this));
     }
 
-    this.updateDisplayedColumns();
     this.initializeFilter();
+    this.isLoadingShare = false;
+    this.shareMsg = "";
 
-    try {
-      await this.fetchItems();
-    } catch (error) {
-      console.error('Error during initialization:', error);
-    } finally {
-      this.isLoadingShare = false;
+    this.searchSub = this.searchSubject
+      .pipe(
+        debounceTime(300)
+      )
+      .subscribe((searchValue) => {
+        this.applyFilter();
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.searchSub) {
+      this.searchSub.unsubscribe();
     }
   }
 
-  filteredItems() {
-    if (!this.searchRimText) return this.fullItemList.data;
-
-    const lowerSearch = this.searchRimText.toLowerCase();
-
-    return this.fullItemList.data.filter(item =>
-      item.ItemCode?.toLowerCase().includes(lowerSearch) ||
-      item.Description?.toLowerCase().includes(lowerSearch)
-    );
+  onSearchChange(value: string) {
+    this.searchSubject.next(value);
   }
 
   trackByItemCode(item: any): string {
@@ -150,11 +155,9 @@ export class Home implements OnInit {
   }
 
   checkScreen() {
-    this.isLoadingShare = true;
     const width = window.innerWidth;
     this.isMobileView = width <= 600;
     this.isTabletView = width > 600 && width <= 960;
-    this.isLoadingShare = false;
   }
 
   resetFilters(): void {
@@ -165,8 +168,22 @@ export class Home implements OnInit {
     this.showPrice = false;
     this.isSet = false;
     this.showOOS = false;
+    this.searchRimText = '';
 
     this.applyFilter();
+  }
+
+  clearList(): void {
+    this.selectedType = 'all-type';
+    this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
+    this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
+    this.showCost = false;
+    this.showPrice = false;
+    this.isSet = false;
+    this.showOOS = false;
+    this.searchRimText = '';
+
+    this.fullItemList.data = [];
   }
 
   toggleCard(item: LensoItem) {
@@ -180,16 +197,6 @@ export class Home implements OnInit {
 
   isSelected(item: LensoItem): boolean {
     return this.selectedItems.includes(item);
-  }
-
-  updateDisplayedColumns() {
-    this.displayedColumns = ['Image', 'ItemCode', 'Description', 'ItemClass', 'ItemBrand', 'ItemCategory', 'StockQty'];
-    if (this.showCost) {
-      this.displayedColumns.push('Cost');
-    }
-    if (this.showPrice) {
-      this.displayedColumns.push('Price');
-    }
   }
 
   async fetchItems(): Promise<void> {
@@ -266,7 +273,7 @@ export class Home implements OnInit {
   }
 
   inStockCount() {
-    return this.filteredItems().filter(item => item.StockQty > 0).length;
+    return this.fullItemList.data.filter(item => item.StockQty > 0).length;
   }
 
   toggleAllSize(event: any) {
@@ -322,31 +329,35 @@ export class Home implements OnInit {
     let selectedSizes: string[] = this.selectedSize.value || [];
     let selectedPCDs: string[] = this.selectedPCD.value || [];
     let selectedType: string = this.selectedType;
+    let search: string = this.searchRimText.trim() || '';
 
     this.selectedItems = [];
-
     const pcdIndex = selectedPCDs.indexOf("all-pcd");
+    const sizeIndex = selectedSizes.indexOf("all-size");
+
     if (pcdIndex > -1) {
       selectedPCDs.splice(pcdIndex, 1);
     }
-    const sizeIndex = selectedSizes.indexOf("all-size");
     if (sizeIndex > -1) {
       selectedSizes.splice(sizeIndex, 1);
     }
 
-    try {
-      this.stockService.getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB).subscribe((data: LensoItem[]) => {
-        this.fullItemList.data = data;
-
-        this.fetchPriceAndWeight();
-
-        console.log(this.fullItemList.data);
+    this.stockService
+      .getFilteredItem(selectedType, selectedSizes, selectedPCDs, this.isLensoDB, search)
+      .subscribe({
+        next: (data: LensoItem[]) => {
+          this.fullItemList.data = data;
+          this.fetchPriceAndWeight();
+          // console.log(this.fullItemList.data);
+        },
+        error: (error) => {
+          console.error('Error during filtering:', error);
+          this.isLoading = false;
+        },
+        complete: () => {
+          this.isLoading = false;
+        }
       });
-    } catch (error) {
-      console.error('Error during filtering:', error);
-    } finally {
-      this.isLoading = false;
-    }
   }
 
   selectAll() {
@@ -355,7 +366,7 @@ export class Home implements OnInit {
       return;
     }
 
-    var itemsToSelect: LensoItem[] = this.filteredItems();
+    var itemsToSelect: LensoItem[] = this.fullItemList.data;
     if (!this.showOOS) itemsToSelect = itemsToSelect.filter((item: LensoItem) => item.StockQty > 0);
 
     itemsToSelect.forEach((item: LensoItem) => {
@@ -364,10 +375,12 @@ export class Home implements OnInit {
   }
 
   async shareSelectedImages() {
+    this.shareMsg = "Compiling Images...";
     this.isLoadingShare = true;
     const imageFiles: File[] = [];
 
     for (const item of this.selectedItems) {
+      this.shareMsg = `Rendering ${item.Description}...`;
       const imageUrl = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
 
       try {
@@ -398,9 +411,11 @@ export class Home implements OnInit {
     }
 
     this.isLoadingShare = false;
+    this.shareMsg = "";
   }
 
   async exportToPDF() {
+    this.shareMsg = "Exporting to PDF...";
     this.isLoadingShare = true;
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -417,28 +432,34 @@ export class Home implements OnInit {
     let x = marginX;
     let y = marginY;
     let itemsOnPage = 0;
+    const maxItemsPerPage = 8;
 
     for (let i = 0; i < this.selectedItems.length; i++) {
       const item = this.selectedItems[i];
+      this.shareMsg = `Rendering ${item.Description}...`;
       const imgSrc = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
 
+      let success = false;
       try {
         const base64Img = await this.getBase64FromUrl(imgSrc);
-        doc.addImage(base64Img, 'PNG', x, y, imgWidth, imgHeight);
+        doc.addImage(base64Img, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
+        success = true;
       } catch (err) {
-        console.error('Error loading image for PDF:', item.ItemCode, err);
+        console.error("Image doesn't exist: ", item.ItemCode, err);
       }
 
-      if (x === marginX) {
-        x += imgWidth + gutterX;
-      } else {
-        x = marginX;
-        y += imgHeight + gutterY;
+      if (success) {
+        if (x === marginX) {
+          x += imgWidth + gutterX;
+        } else {
+          x = marginX;
+          y += imgHeight + gutterY;
+        }
+
+        itemsOnPage++;
       }
 
-      itemsOnPage++;
-
-      if (itemsOnPage === 8 && i < this.selectedItems.length - 1) {
+      if (itemsOnPage === maxItemsPerPage && i < this.selectedItems.length - 1) {
         doc.addPage();
         x = marginX;
         y = marginY;
@@ -449,14 +470,19 @@ export class Home implements OnInit {
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], 'lenso-selected-wheel-catalogue.pdf', { type: 'application/pdf' });
 
-    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-      try {
-        await navigator.share({
-          title: 'Selected Wheels PDF',
-          files: [pdfFile],
-        });
-      } catch (err) {
-        console.error('Sharing failed:', err);
+    if (this.isMobileView || this.isTabletView) {
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            title: 'Selected Wheels PDF',
+            files: [pdfFile],
+          });
+        } catch (err) {
+          console.error('Sharing failed:', err);
+        }
+      } else {
+        const blobUrl = doc.output('bloburl');
+        window.open(blobUrl, '_blank');
       }
     } else {
       const blobUrl = doc.output('bloburl');
@@ -464,10 +490,14 @@ export class Home implements OnInit {
     }
 
     this.isLoadingShare = false;
+    this.shareMsg = "";
   }
 
   private async getBase64FromUrl(url: string): Promise<string> {
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch image: ${url} (${res.status})`);
+    }
     const blob = await res.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();

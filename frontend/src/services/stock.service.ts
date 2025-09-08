@@ -34,14 +34,21 @@ export class StockService {
         return this.http.get<any[]>(url);
     }
 
-    getFilteredItem(type: string, size: string[], pcd: string[], isLensoDB: boolean) {
+    getFilteredItem(type: string, size: string[], pcd: string[], isLensoDB: boolean, search?: string) {
         const dbParam = isLensoDB ? 'lenso' : 'kai_shen';
+
+        let params: any = {
+            type,
+            pcd: JSON.stringify(pcd),
+            size: JSON.stringify(size),
+        };
+
+        if (search && search.trim() !== '') {
+            params.search = search;
+        }
+
         return this.http.get<any[]>(`${this.filteredItemApiUrl}?db=${dbParam}`, {
-            params: {
-                type,
-                pcd: JSON.stringify(pcd),
-                size: JSON.stringify(size)
-            }
+            params
         });
     }
 }
