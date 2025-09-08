@@ -31,6 +31,26 @@ img.fallback {
   margin-top: 40px;
 }
 
+.back-to-top-button {
+  position: fixed;
+  z-index: 998;
+  border-radius: 50%;
+  background-color: #a01b1f;
+  bottom: 2vh;
+  right: 2vw;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s ease-in-out;
+}
+
+.back-to-top-button button {
+  color: white;
+}
+
+.back-to-top-button:hover {
+  opacity: 0.85;
+}
+
 .filter-select-options,
 .checkbox-options {
   display: flex;

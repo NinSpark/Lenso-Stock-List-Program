@@ -1,11 +1,17 @@
-<div class="loading-share-container d-flex text-align-center" *ngIf="isLoadingShare">
+<div *ngIf="isLoadingShare" class="loading-share-container d-flex text-align-center">
     <div>
         <mat-spinner diameter="100"></mat-spinner>
         <div id="share-msg">{{shareMsg}}</div>
     </div>
 </div>
 
-<div class="body" *ngIf="!isLoadingShare">
+<div *ngIf="showBackToTop" class="back-to-top-button">
+    <button matSuffix mat-icon-button (click)="scrollToTop()">
+        <mat-icon>arrow_upward</mat-icon>
+    </button>
+</div>
+
+<div *ngIf="!isLoadingShare" class="body">
     <div class="first-row">
         <mat-form-field class="search-form-field">
             <mat-label>Search Wheel Keyword</mat-label>
@@ -148,7 +154,7 @@
                                 </div>
 
                                 <img class="wheel-image" [style.height]="item.imageLoaded ? '280px' : '0'"
-                                    [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                                    [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>
 
@@ -198,7 +204,8 @@
                                         </div>
                                         <div *ngIf="item.Price != -1">
                                             <div style="font-size: 12px; padding-bottom: 2px;">MYR</div>
-                                            <div style="padding-bottom: 2px;">{{ item.Price * 4 | number:'1.2-2' }}</div>
+                                            <div style="padding-bottom: 2px;">{{ item.Price * 4 | number:'1.2-2' }}
+                                            </div>
                                             <div class="set-div">RM {{ item.Price | number:'1.2-2' }} per pcs</div>
                                         </div>
                                     </div>
@@ -239,7 +246,7 @@
                             </div>
 
                             <img class="wheel-image" [style.height]="item.imageLoaded ? '250px' : '0'"
-                                [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                                [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                 (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                         </div>
 
@@ -328,7 +335,7 @@
                                 </div>
 
                                 <img class="wheel-image" [style.height]="item.imageLoaded ? '260px' : '0'"
-                                    [src]="'https://98j88mtl-3000.asse.devtunnels.ms/images/' + item.ItemCode + '.png'"
+                                    [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>
 
@@ -378,7 +385,8 @@
                                         </div>
                                         <div *ngIf="item.Price != -1">
                                             <div style="font-size: 12px; padding-bottom: 2px;">MYR</div>
-                                            <div style="padding-bottom: 2px;">{{ item.Price * 4 | number:'1.2-2' }}</div>
+                                            <div style="padding-bottom: 2px;">{{ item.Price * 4 | number:'1.2-2' }}
+                                            </div>
                                             <div class="set-div">RM {{ item.Price | number:'1.2-2' }} per pcs</div>
                                         </div>
                                     </div>

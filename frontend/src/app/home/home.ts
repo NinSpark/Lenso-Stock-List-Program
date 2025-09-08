@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, PLATFORM_ID, Inject, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, PLATFORM_ID, Inject, ElementRef, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormControl } from '@angular/forms';
 import { StockService } from '../../services/stock.service';
@@ -31,6 +31,9 @@ import { debounceTime } from 'rxjs/operators';
   ]
 })
 export class Home implements OnInit {
+  backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
+  // backendLink = "https://mcq5cp7n-4202.asse.devtunnels.ms";
+
   isLoading: boolean = false;
   isLoadingShare: boolean = false;
   isLensoDB: boolean = true;
@@ -43,12 +46,13 @@ export class Home implements OnInit {
 
   fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
-  isSet: boolean = false;
+  isSet: boolean = true;
   showCost: boolean = false;
-  showPrice: boolean = false;
+  showPrice: boolean = true;
   showOOS: boolean = false;
   isMobileView: boolean = true;
   isTabletView: boolean = false;
+  showBackToTop: boolean = false;
 
   selectedSize = new FormControl<string[]>([]);
   selectedPCD = new FormControl<string[]>([]);
@@ -126,6 +130,12 @@ export class Home implements OnInit {
       });
   }
 
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTop = scrollPosition > 200;
+  }
+
   ngOnDestroy() {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
@@ -134,6 +144,10 @@ export class Home implements OnInit {
 
   onSearchChange(value: string) {
     this.searchSubject.next(value);
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   trackByItemCode(item: any): string {
@@ -378,10 +392,11 @@ export class Home implements OnInit {
     this.shareMsg = "Compiling Images...";
     this.isLoadingShare = true;
     const imageFiles: File[] = [];
+    var count: number = 0;
 
     for (const item of this.selectedItems) {
-      this.shareMsg = `Rendering ${item.Description}...`;
-      const imageUrl = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
+      this.shareMsg = `Rendering ${item.Description}... (${count}/${this.selectedItems.length})`;
+      const imageUrl = `${this.backendLink}/images/png/${item.ItemCode}.png`;
 
       try {
         const response = await fetch(imageUrl);
@@ -394,6 +409,8 @@ export class Home implements OnInit {
       } catch (err) {
         console.error('Failed to fetch image:', imageUrl, err);
       }
+
+      count++;
     }
 
     if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
@@ -417,49 +434,58 @@ export class Home implements OnInit {
   async exportToPDF() {
     this.shareMsg = "Exporting to PDF...";
     this.isLoadingShare = true;
+
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-
     const marginX = 4;
     const marginY = 4;
     const gutterX = 4;
     const gutterY = 4;
-
     const imgWidth = (pageWidth - marginX * 2 - gutterX) / 2;
     const imgHeight = (pageHeight - marginY * 2 - gutterY * 3) / 4;
+    const maxItemsPerPage = 8;
+
+    const imagePromises = this.selectedItems.map(async (item) => {
+      const imgSrc = `${this.backendLink}/images/webp/${item.ItemCode}.webp`;
+      try {
+        return {
+          item,
+          imgEl: await this.getImageElement(imgSrc),
+        };
+      } catch {
+        return null; // skip missing images
+      }
+    });
+
+    const loadedImages = (await Promise.all(imagePromises))
+      .filter((img): img is { item: LensoItem; imgEl: HTMLImageElement } => img !== null);
 
     let x = marginX;
     let y = marginY;
     let itemsOnPage = 0;
-    const maxItemsPerPage = 8;
 
-    for (let i = 0; i < this.selectedItems.length; i++) {
-      const item = this.selectedItems[i];
-      this.shareMsg = `Rendering ${item.Description}...`;
-      const imgSrc = `https://98j88mtl-3000.asse.devtunnels.ms/images/${item.ItemCode}.png`;
+    for (let i = 0; i < loadedImages.length; i++) {
+      const { item, imgEl } = loadedImages[i];
+      this.shareMsg = `Rendering ${item.Description}... (${i}/${loadedImages.length})`;
+      await new Promise(resolve => setTimeout(resolve, 0));
 
-      let success = false;
       try {
-        const base64Img = await this.getBase64FromUrl(imgSrc);
-        doc.addImage(base64Img, 'JPEG', x, y, imgWidth, imgHeight, undefined, 'FAST');
-        success = true;
+        doc.addImage(imgEl, 'WEBP', x, y, imgWidth, imgHeight, undefined, 'FAST');
       } catch (err) {
-        console.error("Image doesn't exist: ", item.ItemCode, err);
+        console.error('Error adding image to PDF:', item.ItemCode, err);
       }
 
-      if (success) {
-        if (x === marginX) {
-          x += imgWidth + gutterX;
-        } else {
-          x = marginX;
-          y += imgHeight + gutterY;
-        }
-
-        itemsOnPage++;
+      if (x === marginX) {
+        x += imgWidth + gutterX;
+      } else {
+        x = marginX;
+        y += imgHeight + gutterY;
       }
 
-      if (itemsOnPage === maxItemsPerPage && i < this.selectedItems.length - 1) {
+      itemsOnPage++;
+
+      if (itemsOnPage === maxItemsPerPage && i < loadedImages.length - 1) {
         doc.addPage();
         x = marginX;
         y = marginY;
@@ -503,6 +529,16 @@ export class Home implements OnInit {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.readAsDataURL(blob);
+    });
+  }
+
+  private async getImageElement(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
     });
   }
 
