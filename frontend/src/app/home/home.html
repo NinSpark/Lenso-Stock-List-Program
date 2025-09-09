@@ -23,6 +23,61 @@
             </button>
         </mat-form-field>
 
+        <button mat-icon-button [matMenuTriggerFor]="sortMenu" class="more-option-button" [disabled]="isLoading">
+            <mat-icon>swap_vert</mat-icon>
+        </button>
+        <mat-menu #sortMenu="matMenu">
+            <button mat-menu-item (click)="sortBy('az')">
+                <mat-icon [style.visibility]="currentSort === 'az' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort A - Z</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('za')">
+                <mat-icon [style.visibility]="currentSort === 'za' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort Z - A</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('newest')">
+                <mat-icon [style.visibility]="currentSort === 'newest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort by Newest</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('oldest')">
+                <mat-icon [style.visibility]="currentSort === 'oldest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort by Oldest</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('priceHigh')">
+                <mat-icon [style.visibility]="currentSort === 'priceHigh' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Price: High - Low</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('priceLow')">
+                <mat-icon [style.visibility]="currentSort === 'priceLow' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Price: Low - High</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('qtyHigh')">
+                <mat-icon [style.visibility]="currentSort === 'qtyHigh' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Qty: High - Low</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('qtyLow')">
+                <mat-icon [style.visibility]="currentSort === 'qtyLow' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Qty: Low - High</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('lightest')">
+                <mat-icon [style.visibility]="currentSort === 'lightest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Lightest</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('heaviest')">
+                <mat-icon [style.visibility]="currentSort === 'heaviest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Heaviest</span>
+            </button>
+        </mat-menu>
+
         <button matIconButton [matMenuTriggerFor]="menu" class="more-option-button">
             <mat-icon>more_vert</mat-icon>
         </button>
@@ -153,7 +208,7 @@
                                     <mat-spinner diameter="70"></mat-spinner>
                                 </div>
 
-                                <img class="wheel-image" [style.height]="item.imageLoaded ? '280px' : '0'"
+                                <img class="wheel-image" [style.width]="item.imageLoaded ? '100%' : '0'"
                                     [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>
@@ -245,7 +300,7 @@
                                 <mat-spinner diameter="70"></mat-spinner>
                             </div>
 
-                            <img class="wheel-image" [style.height]="item.imageLoaded ? '250px' : '0'"
+                            <img class="wheel-image" [style.width]="item.imageLoaded ? '100%' : '0'"
                                 [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                 (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                         </div>
@@ -334,7 +389,7 @@
                                     <mat-spinner diameter="70"></mat-spinner>
                                 </div>
 
-                                <img class="wheel-image" [style.height]="item.imageLoaded ? '260px' : '0'"
+                                <img class="wheel-image" [style.width]="item.imageLoaded ? '100%' : '0'"
                                     [src]="backendLink + '/images/webp/' + item.ItemCode + '.webp'"
                                     (load)="onImgLoad($event, item)" (error)="onImgError($event, item)" loading="lazy">
                             </div>

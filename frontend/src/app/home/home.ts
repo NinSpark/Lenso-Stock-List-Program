@@ -53,6 +53,7 @@ export class Home implements OnInit {
   isMobileView: boolean = true;
   isTabletView: boolean = false;
   showBackToTop: boolean = false;
+  currentSort: string = 'az';
 
   selectedSize = new FormControl<string[]>([]);
   selectedPCD = new FormControl<string[]>([]);
@@ -68,19 +69,24 @@ export class Home implements OnInit {
     { name: '17"', value: '17' },
     { name: '18"', value: '18' },
     { name: '19"', value: '19' },
-    { name: '20"', value: '20' }
+    { name: '20"', value: '20' },
+    { name: '22"', value: '22' }
   ];
 
   pcdList: any[] = [
     { name: '4-100', value: '4-100' },
     { name: '4-108', value: '4-108' },
+    { name: '4-114.3', value: '4-114.3' },
     { name: '4(100/114.3)', value: '4(100/114.3)' },
     { name: '5-100', value: '5-100' },
+    { name: '5(100/114.3)', value: '5(100/114.3)' },
     { name: '5-108', value: '5-108' },
     { name: '5-112', value: '5-112' },
     { name: '5-114.3', value: '5-114.3' },
     { name: '5-120', value: '5-120' },
+    { name: '5-130', value: '5-130' },
     { name: '5-139.7', value: '5-139.7' },
+    { name: '5-150', value: '5-150' },
     { name: '6-114.3', value: '6-114.3' },
     { name: '6-139.7', value: '6-139.7' }
   ];
@@ -133,7 +139,7 @@ export class Home implements OnInit {
   @HostListener('window:scroll', [])
   onWindowScroll() {
     const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTop = scrollPosition > 200;
+    this.showBackToTop = scrollPosition > 400;
   }
 
   ngOnDestroy() {
@@ -154,24 +160,60 @@ export class Home implements OnInit {
     return item.ItemCode;
   }
 
-  filteredItemsTable() {
-    if (!this.searchRimText) return this.fullItemList;
-
-    const lowerSearch = this.searchRimText.toLowerCase();
-    var filteredItemList = new MatTableDataSource<LensoItem>();
-
-    filteredItemList.data = this.fullItemList.data.filter(item =>
-      item.ItemCode?.toLowerCase().includes(lowerSearch) ||
-      item.Description?.toLowerCase().includes(lowerSearch)
-    );
-
-    return filteredItemList;
-  }
-
   checkScreen() {
     const width = window.innerWidth;
     this.isMobileView = width <= 600;
-    this.isTabletView = width > 600 && width <= 960;
+    this.isTabletView = width > 600 && width <= 1024;
+  }
+
+  sortBy(criteria: string) {
+    this.currentSort = criteria;
+    this.applySort();
+  }
+
+  applySort() {
+    if (this.fullItemList.data.length == 0 || !this.currentSort) return;
+
+    switch (this.currentSort) {
+      case 'az':
+        this.fullItemList.data.sort((a, b) => a.Description.localeCompare(b.Description));
+        break;
+      case 'za':
+        this.fullItemList.data.sort((a, b) => b.Description.localeCompare(a.Description));
+        break;
+      case 'newest':
+        this.fullItemList.data.sort((a, b) => a.ItemCode.localeCompare(b.ItemCode));
+        break;
+      case 'oldest':
+        this.fullItemList.data.sort((a, b) => b.ItemCode.localeCompare(a.ItemCode));
+        break;
+      case 'priceHigh':
+        this.fullItemList.data.sort((a, b) => b.Cost - a.Cost);
+        break;
+      case 'priceLow':
+        this.fullItemList.data.sort((a, b) => a.Cost - b.Cost);
+        break;
+      case 'qtyHigh':
+        this.fullItemList.data.sort((a, b) => b.StockQty - a.StockQty);
+        break;
+      case 'qtyLow':
+        this.fullItemList.data.sort((a, b) => a.StockQty - b.StockQty);
+        break;
+      case 'heaviest':
+        this.fullItemList.data.sort((a, b) => {
+          const aWeight = (a.Weight && a.Weight > 0) ? a.Weight : -Infinity;
+          const bWeight = (b.Weight && b.Weight > 0) ? b.Weight : -Infinity;
+          return bWeight - aWeight;
+        });
+        break;
+      case 'lightest':
+        this.fullItemList.data.sort((a, b) => {
+          const aWeight = (a.Weight && a.Weight > 0) ? a.Weight : Infinity;
+          const bWeight = (b.Weight && b.Weight > 0) ? b.Weight : Infinity;
+          return aWeight - bWeight;
+        });
+        break;
+    }
   }
 
   resetFilters(): void {
@@ -179,8 +221,8 @@ export class Home implements OnInit {
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
     this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
     this.showCost = false;
-    this.showPrice = false;
-    this.isSet = false;
+    this.showPrice = true;
+    this.isSet = true;
     this.showOOS = false;
     this.searchRimText = '';
 
@@ -211,18 +253,6 @@ export class Home implements OnInit {
 
   isSelected(item: LensoItem): boolean {
     return this.selectedItems.includes(item);
-  }
-
-  async fetchItems(): Promise<void> {
-    try {
-      this.stockService.getItemList(this.isLensoDB).subscribe((data: LensoItem[]) => {
-        this.fullItemList.data = data;
-
-        this.fetchPriceAndWeight();
-      });
-    } catch (error) {
-      console.error('Error fetching items:', error);
-    }
   }
 
   async fetchPriceAndWeight(): Promise<void> {
@@ -361,6 +391,7 @@ export class Home implements OnInit {
       .subscribe({
         next: (data: LensoItem[]) => {
           this.fullItemList.data = data;
+          this.applySort();
           this.fetchPriceAndWeight();
           // console.log(this.fullItemList.data);
         },

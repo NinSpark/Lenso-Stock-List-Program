@@ -24,7 +24,7 @@ img.fallback {
 }
 
 .body {
-  padding: 2px 10px;
+  padding: 10px;
 }
 
 #share-msg {
@@ -36,8 +36,8 @@ img.fallback {
   z-index: 998;
   border-radius: 50%;
   background-color: #a01b1f;
-  bottom: 2vh;
-  right: 2vw;
+  bottom: 3vh;
+  right: 5vw;
   color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: opacity 0.3s ease-in-out;
@@ -244,7 +244,7 @@ mat-card {
 }
 
 .wheel-image {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .toggle-card-checkbox {
@@ -269,9 +269,6 @@ mat-card {
 
 /* mobile css */
 @media only screen and (max-width: 600px) {
-  .wheel-image {
-    height: 250px;
-  }
 
   .wheel-image-loading {
     width: 100%;
@@ -302,10 +299,6 @@ mat-card {
     gap: 12px;
   }
 
-  .wheel-image {
-    height: 260px;
-  }
-
   .wheel-image-loading {
     width: 100%;
     height: 260px;
@@ -334,9 +327,6 @@ mat-card {
 
 /* desktop css */
 @media only screen and (min-width: 1024px) {
-  .wheel-image {
-    height: 280px;
-  }
 
   .wheel-image-loading {
     width: 100%;
