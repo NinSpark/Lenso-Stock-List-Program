@@ -32,7 +32,7 @@ import { debounceTime } from 'rxjs/operators';
 })
 export class Home implements OnInit {
   backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
-  // backendLink = "https://mcq5cp7n-4202.asse.devtunnels.ms";
+  // backendLink = "https://mcq5cp7n-3002.asse.devtunnels.ms";
 
   isLoading: boolean = false;
   isLoadingShare: boolean = false;
@@ -129,7 +129,7 @@ export class Home implements OnInit {
 
     this.searchSub = this.searchSubject
       .pipe(
-        debounceTime(300)
+        debounceTime(600)
       )
       .subscribe((searchValue) => {
         this.applyFilter();
@@ -188,10 +188,18 @@ export class Home implements OnInit {
         this.fullItemList.data.sort((a, b) => b.ItemCode.localeCompare(a.ItemCode));
         break;
       case 'priceHigh':
-        this.fullItemList.data.sort((a, b) => b.Cost - a.Cost);
+        this.fullItemList.data.sort((a, b) => {
+          const aPrice = (a.Price != null && a.Price >= 0) ? a.Price : -Infinity;
+          const bPrice = (b.Price != null && b.Price >= 0) ? b.Price : -Infinity;
+          return bPrice - aPrice;
+        });
         break;
       case 'priceLow':
-        this.fullItemList.data.sort((a, b) => a.Cost - b.Cost);
+        this.fullItemList.data.sort((a, b) => {
+          const aPrice = (a.Price != null && a.Price >= 0) ? a.Price : Infinity;
+          const bPrice = (b.Price != null && b.Price >= 0) ? b.Price : Infinity;
+          return aPrice - bPrice; // ascending
+        });
         break;
       case 'qtyHigh':
         this.fullItemList.data.sort((a, b) => b.StockQty - a.StockQty);
