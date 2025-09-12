@@ -47,6 +47,16 @@
                 <span>Sort by Oldest</span>
             </button>
 
+            <button mat-menu-item (click)="sortBy('lightest')">
+                <mat-icon [style.visibility]="currentSort === 'lightest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort by Lightest</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('heaviest')">
+                <mat-icon [style.visibility]="currentSort === 'heaviest' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort by Heaviest</span>
+            </button>
+
             <button mat-menu-item (click)="sortBy('priceHigh')">
                 <mat-icon [style.visibility]="currentSort === 'priceHigh' ? 'visible' : 'hidden'">check</mat-icon>
                 <span>Price: High - Low</span>
@@ -65,16 +75,6 @@
             <button mat-menu-item (click)="sortBy('qtyLow')">
                 <mat-icon [style.visibility]="currentSort === 'qtyLow' ? 'visible' : 'hidden'">check</mat-icon>
                 <span>Qty: Low - High</span>
-            </button>
-
-            <button mat-menu-item (click)="sortBy('lightest')">
-                <mat-icon [style.visibility]="currentSort === 'lightest' ? 'visible' : 'hidden'">check</mat-icon>
-                <span>Lightest</span>
-            </button>
-
-            <button mat-menu-item (click)="sortBy('heaviest')">
-                <mat-icon [style.visibility]="currentSort === 'heaviest' ? 'visible' : 'hidden'">check</mat-icon>
-                <span>Heaviest</span>
             </button>
         </mat-menu>
 

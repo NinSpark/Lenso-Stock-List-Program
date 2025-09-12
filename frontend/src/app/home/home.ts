@@ -182,10 +182,10 @@ export class Home implements OnInit {
         this.fullItemList.data.sort((a, b) => b.Description.localeCompare(a.Description));
         break;
       case 'newest':
-        this.fullItemList.data.sort((a, b) => a.ItemCode.localeCompare(b.ItemCode));
+        this.fullItemList.data.sort((a, b) => b.ItemCode.localeCompare(a.ItemCode));
         break;
       case 'oldest':
-        this.fullItemList.data.sort((a, b) => b.ItemCode.localeCompare(a.ItemCode));
+        this.fullItemList.data.sort((a, b) => a.ItemCode.localeCompare(b.ItemCode));
         break;
       case 'priceHigh':
         this.fullItemList.data.sort((a, b) => {
@@ -198,7 +198,7 @@ export class Home implements OnInit {
         this.fullItemList.data.sort((a, b) => {
           const aPrice = (a.Price != null && a.Price >= 0) ? a.Price : Infinity;
           const bPrice = (b.Price != null && b.Price >= 0) ? b.Price : Infinity;
-          return aPrice - bPrice; // ascending
+          return aPrice - bPrice;
         });
         break;
       case 'qtyHigh':
