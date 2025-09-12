@@ -53,7 +53,7 @@ export class Home implements OnInit {
   isMobileView: boolean = true;
   isTabletView: boolean = false;
   showBackToTop: boolean = false;
-  currentSort: string = 'az';
+  currentSort: string = 'newest';
 
   selectedSize = new FormControl<string[]>([]);
   selectedPCD = new FormControl<string[]>([]);

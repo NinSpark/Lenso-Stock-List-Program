@@ -27,16 +27,6 @@
             <mat-icon>swap_vert</mat-icon>
         </button>
         <mat-menu #sortMenu="matMenu">
-            <button mat-menu-item (click)="sortBy('az')">
-                <mat-icon [style.visibility]="currentSort === 'az' ? 'visible' : 'hidden'">check</mat-icon>
-                <span>Sort A - Z</span>
-            </button>
-
-            <button mat-menu-item (click)="sortBy('za')">
-                <mat-icon [style.visibility]="currentSort === 'za' ? 'visible' : 'hidden'">check</mat-icon>
-                <span>Sort Z - A</span>
-            </button>
-
             <button mat-menu-item (click)="sortBy('newest')">
                 <mat-icon [style.visibility]="currentSort === 'newest' ? 'visible' : 'hidden'">check</mat-icon>
                 <span>Sort by Newest</span>
@@ -45,6 +35,16 @@
             <button mat-menu-item (click)="sortBy('oldest')">
                 <mat-icon [style.visibility]="currentSort === 'oldest' ? 'visible' : 'hidden'">check</mat-icon>
                 <span>Sort by Oldest</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('az')">
+                <mat-icon [style.visibility]="currentSort === 'az' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort A - Z</span>
+            </button>
+
+            <button mat-menu-item (click)="sortBy('za')">
+                <mat-icon [style.visibility]="currentSort === 'za' ? 'visible' : 'hidden'">check</mat-icon>
+                <span>Sort Z - A</span>
             </button>
 
             <button mat-menu-item (click)="sortBy('lightest')">
