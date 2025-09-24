@@ -510,7 +510,18 @@ export class Home implements OnInit {
       await new Promise(resolve => setTimeout(resolve, 0));
 
       try {
-        doc.addImage(imgEl, 'WEBP', x, y, imgWidth, imgHeight, undefined, 'FAST');
+        const naturalWidth = imgEl.naturalWidth;
+        const naturalHeight = imgEl.naturalHeight;
+
+        const scale = Math.min(imgWidth / naturalWidth, imgHeight / naturalHeight);
+
+        const drawWidth = naturalWidth * scale;
+        const drawHeight = naturalHeight * scale;
+
+        const offsetX = x + (imgWidth - drawWidth) / 2;
+        const offsetY = y + (imgHeight - drawHeight) / 2;
+
+        doc.addImage(imgEl, 'WEBP', offsetX, offsetY, drawWidth, drawHeight, undefined, 'FAST');
       } catch (err) {
         console.error('Error adding image to PDF:', item.ItemCode, err);
       }
