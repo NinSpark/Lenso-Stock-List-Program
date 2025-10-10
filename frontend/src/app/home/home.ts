@@ -378,6 +378,7 @@ export class Home implements OnInit {
 
   async applyFilter() {
     this.isLoading = true;
+    this.fullItemList.data = [];
     let selectedSizes: string[] = this.selectedSize.value || [];
     let selectedPCDs: string[] = this.selectedPCD.value || [];
     let selectedType: string = this.selectedType;
