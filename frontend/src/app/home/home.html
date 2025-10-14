@@ -128,36 +128,39 @@
                 </mat-panel-description>
             </mat-expansion-panel-header>
             <div class="filter-select-options">
-                <mat-form-field>
-                    <mat-label>Size</mat-label>
-                    <mat-select [formControl]="selectedSize" multiple [disabled]="isLoading">
-                        <mat-select-trigger>
-                            {{ getSelectedSizeText() }}
-                        </mat-select-trigger>
-                        <mat-option #allSize value="all-size" (click)="toggleAllSize(allSize)">All Sizes</mat-option>
-                        <mat-option *ngFor="let size of sizeList" [value]="size.value">{{size.name}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <div class="filter-select-form">
+                    <mat-form-field>
+                        <mat-label>Size</mat-label>
+                        <mat-select [formControl]="selectedSize" multiple [disabled]="isLoading">
+                            <mat-select-trigger>
+                                {{ getSelectedSizeText() }}
+                            </mat-select-trigger>
+                            <mat-option #allSize value="all-size" (click)="toggleAllSize(allSize)">All
+                                Sizes</mat-option>
+                            <mat-option *ngFor="let size of sizeList" [value]="size.value">{{size.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
 
-                <mat-form-field>
-                    <mat-label>P.C.D.</mat-label>
-                    <mat-select [formControl]="selectedPCD" multiple [disabled]="isLoading">
-                        <mat-select-trigger>
-                            {{ getSelectedPCDText() }}
-                        </mat-select-trigger>
-                        <mat-option #allPCD value="all-pcd" (click)="toggleAllPCD(allPCD)">All PCDs</mat-option>
-                        <mat-option *ngFor="let pcd of pcdList" [value]="pcd.value">{{pcd.name}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                    <mat-form-field>
+                        <mat-label>P.C.D.</mat-label>
+                        <mat-select [formControl]="selectedPCD" multiple [disabled]="isLoading">
+                            <mat-select-trigger>
+                                {{ getSelectedPCDText() }}
+                            </mat-select-trigger>
+                            <mat-option #allPCD value="all-pcd" (click)="toggleAllPCD(allPCD)">All PCDs</mat-option>
+                            <mat-option *ngFor="let pcd of pcdList" [value]="pcd.value">{{pcd.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
 
-                <mat-form-field>
-                    <mat-label>Type</mat-label>
-                    <mat-select [(ngModel)]="selectedType" [disabled]="isLoading">
-                        <mat-option value="all-type">All Type</mat-option>
-                        <mat-option value="CAST">Cast</mat-option>
-                        <mat-option value="FLOW FORM">Flow Form</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                    <mat-form-field>
+                        <mat-label>Type</mat-label>
+                        <mat-select [(ngModel)]="selectedType" [disabled]="isLoading">
+                            <mat-option value="all-type">All Type</mat-option>
+                            <mat-option value="CAST">Cast</mat-option>
+                            <mat-option value="FLOW FORM">Flow Form</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
 
                 <button matButton="filled" color="primary" (click)="applyFilter(); filterPanel.close()"
                     style="margin-top: 8px;"
@@ -165,7 +168,7 @@
                     Apply
                 </button>
 
-                <button mat-button color="warn" (click)="resetFilters(); filterPanel.close()" [disabled]="isLoading">
+                <button matButton="outlined" color="warn" (click)="resetFilters(); filterPanel.close()" [disabled]="isLoading">
                     Reset
                 </button>
             </div>
