@@ -81,6 +81,7 @@ export class Home implements OnInit {
     { name: '5-100', value: '5-100' },
     { name: '5(100/114.3)', value: '5(100/114.3)' },
     { name: '5-108', value: '5-108' },
+    { name: '5(108/120)', value: '5(108/120)' },
     { name: '5-112', value: '5-112' },
     { name: '5-114.3', value: '5-114.3' },
     { name: '5-120', value: '5-120' },
@@ -376,8 +377,18 @@ export class Home implements OnInit {
       .join(', ');
   }
 
+  setLoading(loading: boolean) {
+    this.isLoading = loading;
+    if (loading) {
+      this.selectedSize.disable();
+    } else {
+      this.selectedSize.enable();
+    }
+  }
+
   async applyFilter() {
-    this.isLoading = true;
+    // this.isLoading = true;
+    this.setLoading(true);
     this.fullItemList.data = [];
     let selectedSizes: string[] = this.selectedSize.value || [];
     let selectedPCDs: string[] = this.selectedPCD.value || [];
@@ -406,10 +417,12 @@ export class Home implements OnInit {
         },
         error: (error) => {
           console.error('Error during filtering:', error);
-          this.isLoading = false;
+          // this.isLoading = false;
+          this.setLoading(false);
         },
         complete: () => {
-          this.isLoading = false;
+          // this.isLoading = false;
+          this.setLoading(false);
         }
       });
   }
