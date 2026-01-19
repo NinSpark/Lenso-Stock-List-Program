@@ -6,15 +6,22 @@ import { Observable } from 'rxjs';
     providedIn: 'root',
 })
 export class StockService {
-    private domain = "http://localhost:3000";
+    // private domain = "http://localhost:3000";
     // private domain = "https://mcq5cp7n-3002.asse.devtunnels.ms";
+    private domain = "https://hbctrlpd-3000.asse.devtunnels.ms";
 
     private itemApiUrl = `${this.domain}/api/item`;
     private filteredItemApiUrl = `${this.domain}/api/filtered-item`;
     private stockApiUrl = `${this.domain}/api/stock`;
     private priceApiUrl = `${this.domain}/api/item-price`;
+    private getSecuredLoginUrl = `${this.domain}/secured-sales-login`;
 
     constructor(private http: HttpClient) { }
+
+    getSecuredLoginDetails(username: string, password: string) {
+        const body = { username, password };
+        return this.http.post<any>(this.getSecuredLoginUrl, body);
+    }
 
     getItemList(isLensoDB?: boolean): Observable<any[]> {
         const dbParam = isLensoDB ? 'lenso' : 'kai_shen';

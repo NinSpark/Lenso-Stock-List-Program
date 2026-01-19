@@ -12,6 +12,8 @@ import { MaterialModule } from '../shared/material.module';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -31,8 +33,9 @@ import { debounceTime } from 'rxjs/operators';
   ]
 })
 export class Home implements OnInit {
-  backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
+  // backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
   // backendLink = "https://mcq5cp7n-3002.asse.devtunnels.ms";
+  backendLink = "http://localhost:3000";
 
   isLoading: boolean = false;
   isLoadingShare: boolean = false;
@@ -103,7 +106,9 @@ export class Home implements OnInit {
   }
 
   constructor(
+    private authService: AuthService,
     private stockService: StockService,
+    private router: Router,
     private cd: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     { nativeElement }: ElementRef<HTMLImageElement>
@@ -147,6 +152,11 @@ export class Home implements OnInit {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
     }
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   onSearchChange(value: string) {

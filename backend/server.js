@@ -4,14 +4,36 @@ const sql = require('mssql');
 const cors = require('cors');
 const { Pool } = require('pg');
 const path = require('path');
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
+const authenticateToken = require('./middleware/authenticateToken');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for Angular frontend
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:4200', // dev
+  'https://mcq5cp7n-4202.asse.devtunnels.ms', // production
+  'https://hbctrlpd-4200.asse.devtunnels.ms', // production
+];
+
+app.use(express.static(path.join(__dirname, 'dist/frontend')));
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/api', authenticateToken);
 
 // Database Configuration
 const kaiShenConfig = {
@@ -82,8 +104,56 @@ async function testDBConnection3() {
     .catch(err => console.error('❌ Error connecting to PostgreSQL:', err));
 }
 
+app.post("/secured-sales-login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
+
+  try {
+    const result = await loginPool.query(
+      "SELECT * FROM sales_report_login WHERE username = $1",
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+
+    // Create JWT
+    const token = jwt.sign(
+      {
+        username: user.username,
+        role: user.role,
+        lensoDivision: user.lenso_division
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // stay logged in 7 days
+    );
+
+    res.json({
+      token,
+      username: user.username,
+      role: user.role,
+      lenso_division: user.lenso_division
+    });
+
+  } catch (err) {
+    console.error("Error fetching sales login:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Fetch item list
-app.get('/api/item', async (req, res) => {
+app.get('/api/item', authenticateToken, async (req, res) => {
   try {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
@@ -99,7 +169,7 @@ app.get('/api/item', async (req, res) => {
 });
 
 // Fetch item price list
-app.get('/api/item-price', async (req, res) => {
+app.get('/api/item-price', authenticateToken, async (req, res) => {
   try {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
@@ -115,7 +185,7 @@ app.get('/api/item-price', async (req, res) => {
 });
 
 // Fetch stock list
-app.get('/api/stock', async (req, res) => {
+app.get('/api/stock', authenticateToken, async (req, res) => {
   try {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
@@ -131,7 +201,7 @@ app.get('/api/stock', async (req, res) => {
 });
 
 // Fetch filtered item list
-app.get('/api/filtered-item', async (req, res) => {
+app.get('/api/filtered-item', authenticateToken, async (req, res) => {
   try {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
