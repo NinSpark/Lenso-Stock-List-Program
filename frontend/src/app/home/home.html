@@ -181,7 +181,7 @@
 
     <div class="checkbox-options">
         <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" [disabled]="isLoading">Show cost</mat-checkbox>
-        <mat-checkbox class="show-price-checkbox" [(ngModel)]="showPrice" [disabled]="isLoading">Show
+        <mat-checkbox *ngIf="!hidePriceOption" class="show-price-checkbox" [(ngModel)]="showPrice" [disabled]="isLoading">Show
             price</mat-checkbox>
         <mat-checkbox class="show-set-checkbox" [(ngModel)]="isSet" [disabled]="isLoading">Show set</mat-checkbox>
         <mat-checkbox class="show-oos-checkbox" [(ngModel)]="showOOS" [disabled]="isLoading">Show out of

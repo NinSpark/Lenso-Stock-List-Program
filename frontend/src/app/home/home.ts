@@ -57,6 +57,7 @@ export class Home implements OnInit {
   isTabletView: boolean = false;
   showBackToTop: boolean = false;
   currentSort: string = 'newest';
+  hidePriceOption: boolean = false;
 
   selectedSize = new FormControl<string[]>([]);
   selectedPCD = new FormControl<string[]>([]);
@@ -127,6 +128,11 @@ export class Home implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.checkScreen();
       window.addEventListener('resize', this.checkScreen.bind(this));
+    }
+
+    if (this.authService.getLoggedInUser() == "KSEM-ADMIN") {
+      this.showPrice = false;
+      this.hidePriceOption = true;
     }
 
     this.initializeFilter();

@@ -118,3 +118,8 @@ mat-card .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__back
 .mat-mdc-progress-spinner .mdc-circular-progress__indeterminate-circle-graphic {
     stroke: #a01b1f !important;
 }
+
+.mat-mdc-progress-bar {
+    --mat-progress-bar-active-indicator-color: #a01b1f;
+    --mat-progress-bar-track-color: rgba(160, 27, 31, 0.25);
+}
