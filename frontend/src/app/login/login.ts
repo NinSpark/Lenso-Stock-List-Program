@@ -25,7 +25,7 @@ export class Login {
       this.router.navigate(['/home']);
     } else {
       this.errorMessage = 'Invalid credentials';
+      this.isLoading = false;
     }
-    this.isLoading = false;
   }
 }

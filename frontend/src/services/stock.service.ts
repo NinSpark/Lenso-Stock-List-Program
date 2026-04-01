@@ -6,9 +6,9 @@ import { Observable } from 'rxjs';
     providedIn: 'root',
 })
 export class StockService {
-    // private domain = "http://localhost:3000";
+    private domain = "http://localhost:3000";
     // private domain = "https://mcq5cp7n-3002.asse.devtunnels.ms";
-    private domain = "https://hbctrlpd-3000.asse.devtunnels.ms";
+    // private domain = "https://hbctrlpd-3000.asse.devtunnels.ms";
 
     private itemApiUrl = `${this.domain}/api/item`;
     private filteredItemApiUrl = `${this.domain}/api/filtered-item`;

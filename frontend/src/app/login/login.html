@@ -2,18 +2,18 @@
     <mat-progress-bar *ngIf="isLoading" mode="indeterminate" style="position: fixed; top: 0;"></mat-progress-bar>
     <div class="login-container">
         <h2>Login</h2>
-        <form (ngSubmit)="login()">
+        <form>
             <div>
                 <input type="text" placeholder="Username" id="username" [(ngModel)]="username"
-                    [ngModelOptions]="{standalone: true}" required />
+                    [ngModelOptions]="{standalone: true}" required [disabled]="isLoading" />
             </div>
 
             <div>
                 <input type="password" placeholder="Password" id="password" [(ngModel)]="password"
-                    [ngModelOptions]="{standalone: true}" required />
+                    [ngModelOptions]="{standalone: true}" required [disabled]="isLoading" />
             </div>
 
-            <button type="submit">Login</button>
+            <button type="button" (click)="login()" [disabled]="isLoading">Login</button>
         </form>
 
         <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>

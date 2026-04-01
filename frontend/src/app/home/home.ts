@@ -79,15 +79,16 @@ export class Home implements OnInit {
 
   pcdList: any[] = [
     { name: '4-100', value: '4-100' },
+    { name: '4(100/114.3)', value: '4(100/114.3)' },
     { name: '4-108', value: '4-108' },
     { name: '4-114.3', value: '4-114.3' },
-    { name: '4(100/114.3)', value: '4(100/114.3)' },
     { name: '5-100', value: '5-100' },
     { name: '5(100/114.3)', value: '5(100/114.3)' },
     { name: '5-108', value: '5-108' },
     { name: '5(108/120)', value: '5(108/120)' },
     { name: '5-112', value: '5-112' },
     { name: '5-114.3', value: '5-114.3' },
+    { name: '5(114.3/120)', value: '5(114.3/120)' },
     { name: '5-120', value: '5-120' },
     { name: '5-130', value: '5-130' },
     { name: '5-139.7', value: '5-139.7' },
