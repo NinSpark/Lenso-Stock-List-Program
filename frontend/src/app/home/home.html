@@ -461,11 +461,27 @@
         </div>
     </ng-container>
 
-    <div *ngIf="isLoading || (inStockCount() == 0 && (fullItemList.data.length - inStockCount()) > 0)"
+    <!-- <div *ngIf="isLoading || (inStockCount() == 0 && (fullItemList.data.length - inStockCount()) > 0)"
         class="loading-container no-entries-message d-flex text-align-center">
         <div>
             <mat-spinner diameter="70"></mat-spinner>
             <div style="margin-top: 20px;">Querying Lenso database...</div>
+        </div>
+    </div> -->
+
+    <div *ngIf="isLoading"
+        class="loading-container no-entries-message d-flex text-align-center">
+        <div>
+            <mat-spinner diameter="70"></mat-spinner>
+            <div style="margin-top: 20px;">Querying Lenso database...</div>
+        </div>
+    </div>
+
+    <div *ngIf="fullItemList.data.length > 0 && !isLoading && !showOOS"
+        class="loading-container no-entries-message d-flex text-align-center">
+        <div class="opaque-msg">
+            <img src="assets/inventory.png" class="msg-icon">
+            <div>Only Out of Stock item(s) result found</div>
         </div>
     </div>
 
