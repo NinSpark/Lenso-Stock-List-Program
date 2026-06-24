@@ -40,6 +40,10 @@ export class Home implements OnInit {
   isLoading: boolean = false;
   isLoadingShare: boolean = false;
   isLensoDB: boolean = true;
+  isStockCountReady: boolean = false;
+  fullStockCount: number = 0;
+  emptyStockCount: number = 0;
+  isInitial: boolean = true;
 
   @ViewChild('searchbar') searchbar!: ElementRef;
   searchRimText = '';
@@ -327,6 +331,10 @@ export class Home implements OnInit {
             item.Cost = currentItemList[0].Cost;
           }
         });
+
+        this.fullStockCount = this.inStockCount();
+        this.emptyStockCount = this.fullItemList.data.length - this.fullStockCount;
+        this.isStockCountReady = true;
       });
     } catch (error) {
       console.error('Error fetching stocks:', error);
@@ -405,7 +413,11 @@ export class Home implements OnInit {
 
   async applyFilter() {
     // this.isLoading = true;
+    this.isInitial = false;
     this.setLoading(true);
+    this.isStockCountReady = false;
+    this.fullStockCount = 0;
+    this.emptyStockCount = 0;
     this.fullItemList.data = [];
     let selectedSizes: string[] = this.selectedSize.value || [];
     let selectedPCDs: string[] = this.selectedPCD.value || [];
