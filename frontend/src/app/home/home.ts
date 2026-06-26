@@ -127,6 +127,11 @@ export class Home implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    if (!this.authService.getToken()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.shareMsg = "Initializing Database...";
     this.isLoadingShare = true;
 
@@ -333,6 +338,7 @@ export class Home implements OnInit {
           }
         });
 
+        this.applySort();
         this.fullStockCount = this.inStockCount();
         this.emptyStockCount = this.fullItemList.data.length - this.fullStockCount;
         this.isStockCountReady = true;
@@ -441,7 +447,6 @@ export class Home implements OnInit {
       .subscribe({
         next: (data: LensoItem[]) => {
           this.fullItemList.data = data;
-          this.applySort();
           this.fetchPriceAndWeight();
           // console.log(this.fullItemList.data);
         },
