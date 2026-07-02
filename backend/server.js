@@ -136,7 +136,7 @@ app.post("/secured-sales-login", async (req, res) => {
         lensoDivision: user.lenso_division
       },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' } // stay logged in 7 days
+      { expiresIn: '30d' } // stay logged in 30 days
     );
 
     res.json({

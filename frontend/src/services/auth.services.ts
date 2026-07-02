@@ -2,6 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { StockService } from '../services/stock.service';
 import { lastValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +10,8 @@ import { lastValueFrom } from 'rxjs';
 export class AuthService {
   private platformId = inject(PLATFORM_ID);
 
-  constructor(private api: StockService) { }
+  constructor(private api: StockService,
+    private router: Router) { }
 
   async login(username: string, password: string): Promise<boolean> {
     try {
@@ -43,6 +45,8 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('token');
     }
+
+    this.router.navigate(['/login']);
   }
 
   getLoggedInUser(): string | null {
