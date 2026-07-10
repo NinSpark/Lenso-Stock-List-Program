@@ -11,6 +11,7 @@ export class StockService {
     // private domain = "https://hbctrlpd-3000.asse.devtunnels.ms";
 
     private itemApiUrl = `${this.domain}/api/item`;
+    private itemPCDUrl = `${this.domain}/api/item-category`;
     private filteredItemApiUrl = `${this.domain}/api/filtered-item`;
     private stockApiUrl = `${this.domain}/api/stock`;
     private priceApiUrl = `${this.domain}/api/item-price`;
@@ -26,6 +27,11 @@ export class StockService {
     getItemList(isLensoDB?: boolean): Observable<any[]> {
         const dbParam = isLensoDB ? 'lenso' : 'kai_shen';
         const url = `${this.itemApiUrl}?db=${dbParam}`;
+        return this.http.get<any[]>(url);
+    }
+
+    getPCDList(): Observable<any[]> {
+        const url = `${this.itemPCDUrl}?db=lenso`;
         return this.http.get<any[]>(url);
     }
 

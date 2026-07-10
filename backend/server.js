@@ -168,6 +168,22 @@ app.get('/api/item', authenticateToken, async (req, res) => {
   }
 });
 
+// Fetch item category
+app.get('/api/item-category', async (req, res) => {
+  try {
+    const dbType = req.query.db; // 'kai_shen' or 'lenso'
+    const pool = await getDBPool(dbType);
+    const request = pool.request();
+    const query = `SELECT * FROM dbo.ItemCategory WHERE ItemCategory NOT LIKE 'BLANK' ORDER BY ItemCategory ASC`;
+
+    const result = await request.query(query);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('Error fetching item category:', err);
+    res.status(500).send('Server error');
+  }
+});
+
 // Fetch item price list
 app.get('/api/item-price', authenticateToken, async (req, res) => {
   try {

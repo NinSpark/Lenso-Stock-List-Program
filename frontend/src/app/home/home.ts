@@ -81,25 +81,7 @@ export class Home implements OnInit {
     { name: '22"', value: '22' }
   ];
 
-  pcdList: any[] = [
-    { name: '4-100', value: '4-100' },
-    { name: '4(100/114.3)', value: '4(100/114.3)' },
-    { name: '4-108', value: '4-108' },
-    { name: '4-114.3', value: '4-114.3' },
-    { name: '5-100', value: '5-100' },
-    { name: '5(100/114.3)', value: '5(100/114.3)' },
-    { name: '5-108', value: '5-108' },
-    { name: '5(108/120)', value: '5(108/120)' },
-    { name: '5-112', value: '5-112' },
-    { name: '5-114.3', value: '5-114.3' },
-    { name: '5(114.3/120)', value: '5(114.3/120)' },
-    { name: '5-120', value: '5-120' },
-    { name: '5-130', value: '5-130' },
-    { name: '5-139.7', value: '5-139.7' },
-    { name: '5-150', value: '5-150' },
-    { name: '6-114.3', value: '6-114.3' },
-    { name: '6-139.7', value: '6-139.7' }
-  ];
+  pcdList: any[] = [];
 
   private _sort!: MatSort;
 
@@ -145,7 +127,7 @@ export class Home implements OnInit {
       this.hidePriceOption = true;
     }
 
-    this.initializeFilter();
+    this.getPCDList();
     this.isLoadingShare = false;
     this.shareMsg = "";
 
@@ -185,6 +167,28 @@ export class Home implements OnInit {
 
   trackByItemCode(item: any): string {
     return item.ItemCode;
+  }
+
+  async getPCDList(): Promise<void> {
+    this.stockService.getPCDList().subscribe({
+      next: (data: any[]) => {
+        if (data.length > 0) {
+          this.pcdList = [];
+          data.forEach(pcd => {
+            this.pcdList.push({
+              name: pcd.Description,
+              value: pcd.ItemCategory
+            });
+          });
+
+          this.initializeFilter();
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching PCDs:', error);
+        this.setLoading(false);
+      }
+    });
   }
 
   checkScreen() {
