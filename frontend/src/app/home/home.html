@@ -192,8 +192,8 @@
 
     <ng-container *ngIf="!isMobileView && !isTabletView">
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
-        <div class="item-shown-message" *ngIf="!showOOS">Showing {{fullStockCount}} result(s).
-            {{emptyStockCount}} item(s) are unavailable.</div>
+        <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
+            {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
         <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
         </div>
         <mat-divider class="eof-divider"></mat-divider>
@@ -284,8 +284,8 @@
     <!-- Mobile: 1 card per row -->
     <ng-container *ngIf="isMobileView">
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
-        <div class="item-shown-message" *ngIf="!showOOS">Showing {{fullStockCount}} result(s).
-            {{emptyStockCount}} item(s) are unavailable.</div>
+        <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
+            {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
         <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
         </div>
         <mat-divider class="eof-divider"></mat-divider>
@@ -371,8 +371,8 @@
     <!-- Tablet: 2 cards per row -->
     <ng-container *ngIf="isTabletView">
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
-        <div class="item-shown-message" *ngIf="!showOOS">Showing {{fullStockCount}} result(s).
-            {{emptyStockCount}} item(s) are unavailable.</div>
+        <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
+            {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
         <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
         </div>
         <mat-divider class="eof-divider"></mat-divider>
@@ -476,8 +476,7 @@
         </div>
     </div>
 
-    <div *ngIf="fullItemList.data.length === 0 && !isLoading"
-        class="d-flex text-align-center no-entries-message">
+    <div *ngIf="fullItemList.data.length === 0 && !isLoading" class="d-flex text-align-center no-entries-message">
         <div *ngIf="searchRimText.trim() != '' && !isInitial" class="opaque-msg">
             <img src="assets/box.png" class="msg-icon">
             <div>No matching results. Try different search or filters.</div>
