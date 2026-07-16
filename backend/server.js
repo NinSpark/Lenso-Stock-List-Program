@@ -206,7 +206,13 @@ app.get('/api/stock', authenticateToken, async (req, res) => {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
     const request = pool.request();
-    const query = `SELECT * FROM dbo.StockDTL`;
+    const query = `
+      SELECT ItemCode,
+      SUM(Qty) AS Qty
+      FROM dbo.StockDTL
+      WHERE ItemCode LIKE 'WA%'
+      GROUP BY ItemCode
+    `;
 
     const result = await request.query(query);
     res.json(result.recordset);

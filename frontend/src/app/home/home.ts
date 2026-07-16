@@ -51,7 +51,6 @@ export class Home implements OnInit {
   private searchSub: any;
   shareMsg: string = '';
 
-  fullStockList: LensoStock[] = [];
   fullItemList = new MatTableDataSource<LensoItem>();
   isSet: boolean = true;
   showCost: boolean = false;
@@ -296,50 +295,51 @@ export class Home implements OnInit {
   }
 
   async fetchPriceAndWeight(): Promise<void> {
-    try {
-      this.stockService.getPriceList(this.isLensoDB).subscribe((data: LensoPrice[]) => {
-        this.fullItemList.data.forEach((item: LensoItem) => {
-          let price = data.find((itemPrice) => itemPrice.ItemCode == item.ItemCode)?.Price;
-          if (price) {
-            item.Price = price;
-          }
-          else {
-            item.Price = -1;
-          }
+    this.stockService.getPriceList(this.isLensoDB).subscribe({
+      next: (data: LensoPrice[]) => {
+        const priceMap = new Map(
+          data.map(price => [price.ItemCode, price])
+        );
 
-          let weight = data.find((itemWeight) => itemWeight.ItemCode == item.ItemCode)?.Weight;
-          if (weight) {
-            item.Weight = weight;
-          }
-          else {
-            item.Weight = -1;
-          }
+        this.fullItemList.data.forEach((item: LensoItem) => {
+          const itemPrice = priceMap.get(item.ItemCode);
+
+          item.Price = itemPrice?.Price ?? -1;
+          item.Weight = itemPrice?.Weight ?? -1;
         });
 
         this.fetchStocks();
-      });
-    } catch (error) {
-      console.error('Error fetching prices:', error);
-    }
+      },
+      error: (err) => {
+        console.error('Error fetching prices:', err);
+      }
+    });
   }
 
   async fetchStocks(): Promise<void> {
     try {
       this.stockService.getStockList(this.isLensoDB).subscribe((data: LensoStock[]) => {
-        this.fullStockList = data;
+        let fullStockList: LensoStock[] = data;
+        const stockMap = new Map<string, { qty: number; cost: number }>();
+
+        fullStockList.forEach(stock => {
+          const existing = stockMap.get(stock.ItemCode);
+
+          if (existing) {
+            existing.qty += stock.Qty;
+          } else {
+            stockMap.set(stock.ItemCode, {
+              qty: stock.Qty,
+              cost: stock.Cost
+            });
+          }
+        });
 
         this.fullItemList.data.forEach((item: LensoItem) => {
-          item.StockQty = 0;
-          item.Cost = 0;
+          const stock = stockMap.get(item.ItemCode);
 
-          let currentItemList = this.fullStockList.filter((stock: LensoStock) => stock.ItemCode === item.ItemCode);
-          currentItemList.forEach((currentItem) => {
-            item.StockQty += currentItem.Qty;
-          });
-
-          if (currentItemList.length > 0) {
-            item.Cost = currentItemList[0].Cost;
-          }
+          item.StockQty = stock?.qty ?? 0;
+          item.Cost = stock?.cost ?? 0;
         });
 
         this.applySort();
