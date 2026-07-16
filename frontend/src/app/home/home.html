@@ -79,7 +79,7 @@
         </mat-menu>
 
         <button matIconButton [matMenuTriggerFor]="menu" class="more-option-button">
-            <mat-icon>more_vert</mat-icon>
+            <mat-icon [matBadge]="selectedItems.length">more_vert</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
             <button *ngIf="fullItemList.data.length == 0" mat-menu-item (click)="applyFilter()" [disabled]="isLoading">
@@ -100,10 +100,6 @@
                 <span>Share PDF</span>
             </button>
             <button mat-menu-item (click)="selectAll()" [disabled]="isLoading">
-                <!-- <mat-icon *ngIf="selectedItems.length == 0">playlist_add_check</mat-icon>
-                <span *ngIf="selectedItems.length == 0">Select All</span>
-                <mat-icon *ngIf="selectedItems.length > 0">playlist_remove</mat-icon>
-                <span *ngIf="selectedItems.length > 0">Deselect All</span> -->
                 <ng-container>
                     @if (selectedItems.length == 0) {
                     <mat-icon>playlist_add_check</mat-icon>
@@ -194,8 +190,6 @@
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
         <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
             {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
-        </div>
         <mat-divider class="eof-divider"></mat-divider>
 
         <div class="desktop-card-div">
@@ -286,8 +280,6 @@
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
         <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
             {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
-        </div>
         <mat-divider class="eof-divider"></mat-divider>
 
         <ng-container *ngFor="let item of fullItemList.data; trackBy: trackByItemCode">
@@ -373,8 +365,6 @@
         <div class="item-shown-message" *ngIf="showOOS">Showing {{fullItemList.data.length}} result(s).</div>
         <div class="item-shown-message" *ngIf="!showOOS">Showing {{inStockCount()}} result(s).
             {{fullItemList.data.length - inStockCount()}} item(s) are unavailable.</div>
-        <div class="item-selected-message">Selected <b style="color: #a01b1f;">{{selectedItems.length}}</b> item(s).
-        </div>
         <mat-divider class="eof-divider"></mat-divider>
 
         <div class="tablet-card-div">

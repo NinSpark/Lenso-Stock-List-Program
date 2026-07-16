@@ -255,6 +255,7 @@ export class Home implements OnInit {
   }
 
   resetFilters(): void {
+    this.selectedItems = [];
     this.selectedType = 'all-type';
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
     this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
@@ -268,6 +269,7 @@ export class Home implements OnInit {
   }
 
   clearList(): void {
+    this.selectedItems = [];
     this.isInitial = true;
     this.selectedType = 'all-type';
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
