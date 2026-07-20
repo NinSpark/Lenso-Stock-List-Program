@@ -53,7 +53,6 @@ export class Home implements OnInit {
 
   fullItemList = new MatTableDataSource<LensoItem>();
   isSet: boolean = true;
-  showCost: boolean = false;
   showPrice: boolean = true;
   showOOS: boolean = false;
   isMobileView: boolean = true;
@@ -259,7 +258,6 @@ export class Home implements OnInit {
     this.selectedType = 'all-type';
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
     this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
-    this.showCost = false;
     this.showPrice = true;
     this.isSet = true;
     this.showOOS = false;
@@ -274,7 +272,6 @@ export class Home implements OnInit {
     this.selectedType = 'all-type';
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
     this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
-    this.showCost = false;
     this.showPrice = false;
     this.isSet = false;
     this.showOOS = false;
@@ -322,7 +319,7 @@ export class Home implements OnInit {
     try {
       this.stockService.getStockList(this.isLensoDB).subscribe((data: LensoStock[]) => {
         let fullStockList: LensoStock[] = data;
-        const stockMap = new Map<string, { qty: number; cost: number }>();
+        const stockMap = new Map<string, { qty: number }>();
 
         fullStockList.forEach(stock => {
           const existing = stockMap.get(stock.ItemCode);
@@ -331,8 +328,7 @@ export class Home implements OnInit {
             existing.qty += stock.Qty;
           } else {
             stockMap.set(stock.ItemCode, {
-              qty: stock.Qty,
-              cost: stock.Cost
+              qty: stock.Qty
             });
           }
         });
@@ -341,7 +337,6 @@ export class Home implements OnInit {
           const stock = stockMap.get(item.ItemCode);
 
           item.StockQty = stock?.qty ?? 0;
-          item.Cost = stock?.cost ?? 0;
         });
 
         this.applySort();

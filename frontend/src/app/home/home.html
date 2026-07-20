@@ -177,7 +177,6 @@
     </mat-accordion>
 
     <div class="checkbox-options">
-        <mat-checkbox class="show-cost-checkbox" [(ngModel)]="showCost" [disabled]="isLoading">Show cost</mat-checkbox>
         <mat-checkbox *ngIf="!hidePriceOption" class="show-price-checkbox" [(ngModel)]="showPrice"
             [disabled]="isLoading">Show
             price</mat-checkbox>

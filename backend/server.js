@@ -158,7 +158,7 @@ app.get('/api/item', authenticateToken, async (req, res) => {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
     const request = pool.request();
-    const query = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
+    const query = `SELECT ItemCode, Description, ItemBrand, ItemClass, ItemCategory FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
 
     const result = await request.query(query);
     res.json(result.recordset);
@@ -174,7 +174,7 @@ app.get('/api/item-category', async (req, res) => {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
     const request = pool.request();
-    const query = `SELECT * FROM dbo.ItemCategory WHERE ItemCategory NOT LIKE 'BLANK' ORDER BY ItemCategory ASC`;
+    const query = `SELECT ItemCategory, Description FROM dbo.ItemCategory WHERE ItemCategory NOT LIKE 'BLANK' ORDER BY ItemCategory ASC`;
 
     const result = await request.query(query);
     res.json(result.recordset);
@@ -190,7 +190,7 @@ app.get('/api/item-price', authenticateToken, async (req, res) => {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
     const pool = await getDBPool(dbType);
     const request = pool.request();
-    const query = `SELECT * FROM dbo.ItemUOM`;
+    const query = `SELECT ItemCode, UOM, Price, Weight FROM dbo.ItemUOM`;
 
     const result = await request.query(query);
     res.json(result.recordset);
@@ -233,7 +233,8 @@ app.get('/api/filtered-item', authenticateToken, async (req, res) => {
     const sizeList = size ? JSON.parse(size) : [];
     const pcdList = pcd ? JSON.parse(pcd) : [];
 
-    let baseQuery = `SELECT * FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
+    let baseQuery = `SELECT ItemCode, Description, ItemBrand, ItemClass, ItemCategory
+     FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
     let conditions = [];
     let parameters = {};
 
