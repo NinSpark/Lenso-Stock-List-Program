@@ -267,7 +267,6 @@ export class Home implements OnInit {
   }
 
   clearList(): void {
-    this.selectedItems = [];
     this.isInitial = true;
     this.selectedType = 'all-type';
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
