@@ -447,8 +447,13 @@ export class Home implements OnInit {
       .subscribe({
         next: (data: LensoItem[]) => {
           this.fullItemList.data = data;
-          this.fetchPriceAndWeight();
+          // this.fetchPriceAndWeight();
           // console.log(this.fullItemList.data);
+
+          this.applySort();
+          this.fullStockCount = this.inStockCount();
+          this.emptyStockCount = this.fullItemList.data.length - this.fullStockCount;
+          this.isStockCountReady = true;
         },
         error: (error) => {
           console.error('Error during filtering:', error);

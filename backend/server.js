@@ -223,6 +223,68 @@ app.get('/api/stock', authenticateToken, async (req, res) => {
 });
 
 // Fetch filtered item list
+// app.get('/api/filtered-item', authenticateToken, async (req, res) => {
+//   try {
+//     const dbType = req.query.db; // 'kai_shen' or 'lenso'
+//     const pool = await getDBPool(dbType);
+
+//     // Extract and parse filters
+//     const { type, size, pcd, search } = req.query;
+//     const sizeList = size ? JSON.parse(size) : [];
+//     const pcdList = pcd ? JSON.parse(pcd) : [];
+
+//     let baseQuery = `SELECT ItemCode, Description, ItemBrand, ItemClass, ItemCategory
+//      FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
+//     let conditions = [];
+//     let parameters = {};
+
+//     if (type && type !== 'all-type') {
+//       conditions.push(`ItemClass = @type`);
+//       parameters.type = type;
+//     }
+
+//     if (sizeList.length > 0) {
+//       conditions.push(
+//         `(${sizeList
+//           .map((_, i) => `LEFT(ItemBrand, CHARINDEX('X', ItemBrand) - 1) = @size${i}`)
+//           .join(' OR ')})`
+//       );
+//       sizeList.forEach((val, i) => {
+//         parameters[`size${i}`] = val;
+//       });
+//     }
+
+//     if (pcdList.length > 0) {
+//       conditions.push(
+//         `(${pcdList.map((_, i) => `ItemCategory = @pcd${i}`).join(' OR ')})`
+//       );
+//       pcdList.forEach((val, i) => {
+//         parameters[`pcd${i}`] = val;
+//       });
+//     }
+
+//     if (search && search.trim() !== '') {
+//       conditions.push(`(ItemCode LIKE @search OR Description LIKE @search OR ItemType LIKE @search)`);
+//       parameters.search = `%${search}%`;
+//     }
+
+//     if (conditions.length > 0) {
+//       baseQuery += ' AND ' + conditions.join(' AND ');
+//     }
+
+//     const request = pool.request();
+//     for (const [key, value] of Object.entries(parameters)) {
+//       request.input(key, value);
+//     }
+
+//     const result = await request.query(baseQuery);
+//     res.json(result.recordset);
+//   } catch (err) {
+//     console.error('Error fetching filtered items:', err);
+//     res.status(500).send('Server error');
+//   }
+// });
+
 app.get('/api/filtered-item', authenticateToken, async (req, res) => {
   try {
     const dbType = req.query.db; // 'kai_shen' or 'lenso'
@@ -230,49 +292,96 @@ app.get('/api/filtered-item', authenticateToken, async (req, res) => {
 
     // Extract and parse filters
     const { type, size, pcd, search } = req.query;
+
     const sizeList = size ? JSON.parse(size) : [];
     const pcdList = pcd ? JSON.parse(pcd) : [];
 
-    let baseQuery = `SELECT ItemCode, Description, ItemBrand, ItemClass, ItemCategory
-     FROM dbo.Item WHERE ItemCode LIKE 'WA%' AND IsActive = 'T'`;
-    let conditions = [];
-    let parameters = {};
+    let baseQuery = `
+      SELECT 
+        ITEM.ItemCode, ITEM.Description, ITEM.ItemBrand, ITEM.ItemClass, ITEM.ItemCategory,
+        SUM(DTL.Qty) AS StockQty, COALESCE(UOM.Price, -1) AS Price, COALESCE(UOM.Weight, -1) AS Weight
+      FROM dbo.Item ITEM
+      INNER JOIN dbo.StockDTL DTL ON ITEM.ItemCode = DTL.ItemCode
+      INNER JOIN dbo.ItemUOM UOM ON ITEM.ItemCode = UOM.ItemCode
+      WHERE ITEM.ItemCode LIKE 'WA%' 
+        AND ITEM.IsActive = 'T'
+    `;
 
+    const conditions = [];
+    const parameters = {};
+
+    // Filter by type
     if (type && type !== 'all-type') {
-      conditions.push(`ItemClass = @type`);
+      conditions.push(`ITEM.ItemClass = @type`);
       parameters.type = type;
     }
 
+    // Filter by size
     if (sizeList.length > 0) {
-      conditions.push(
-        `(${sizeList
-          .map((_, i) => `LEFT(ItemBrand, CHARINDEX('X', ItemBrand) - 1) = @size${i}`)
-          .join(' OR ')})`
-      );
+      conditions.push(`
+        (
+          ${sizeList
+          .map(
+            (_, i) =>
+              `LEFT(ITEM.ItemBrand, CHARINDEX('X', ITEM.ItemBrand) - 1) = @size${i}`
+          )
+          .join(' OR ')}
+        )
+      `);
+
       sizeList.forEach((val, i) => {
         parameters[`size${i}`] = val;
       });
     }
 
+    // Filter by PCD
     if (pcdList.length > 0) {
-      conditions.push(
-        `(${pcdList.map((_, i) => `ItemCategory = @pcd${i}`).join(' OR ')})`
-      );
+      conditions.push(`
+        (
+          ${pcdList
+          .map((_, i) => `ITEM.ItemCategory = @pcd${i}`)
+          .join(' OR ')}
+        )
+      `);
+
       pcdList.forEach((val, i) => {
         parameters[`pcd${i}`] = val;
       });
     }
 
+    // Search
     if (search && search.trim() !== '') {
-      conditions.push(`(ItemCode LIKE @search OR Description LIKE @search OR ItemType LIKE @search)`);
-      parameters.search = `%${search}%`;
+      conditions.push(`
+        (
+          ITEM.ItemCode LIKE @search 
+          OR ITEM.Description LIKE @search 
+          OR ITEM.ItemType LIKE @search
+        )
+      `);
+
+      parameters.search = `%${search.trim()}%`;
     }
 
+    // Add filters before GROUP BY
     if (conditions.length > 0) {
-      baseQuery += ' AND ' + conditions.join(' AND ');
+      baseQuery += ` AND ${conditions.join(' AND ')}`;
     }
+
+    // Group after all WHERE conditions
+    baseQuery += `
+      GROUP BY 
+        ITEM.ItemCode, 
+        ITEM.Description, 
+        ITEM.ItemBrand, 
+        ITEM.ItemClass, 
+        ITEM.ItemCategory,
+        UOM.UOM,
+        UOM.Price,
+        UOM.Weight
+    `;
 
     const request = pool.request();
+
     for (const [key, value] of Object.entries(parameters)) {
       request.input(key, value);
     }
