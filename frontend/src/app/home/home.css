@@ -143,6 +143,7 @@ mat-card {
   padding-bottom: 10px;
   border: 2px solid #797979;
   border-radius: 10px !important;
+  height: 100%;
 
   img {
     width: 100%;
@@ -374,4 +375,8 @@ mat-card {
     justify-content: center;
     align-items: center;
   }
+}
+
+mat-card-content {
+  margin-top: auto;
 }
