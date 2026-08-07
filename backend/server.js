@@ -63,11 +63,11 @@ const lensoConfig = {
 };
 
 const loginPool = new Pool({
-  host: "192.168.0.56",
-  port: 5432,
-  user: "postgres",
-  password: "postgres",
-  database: "postgres",
+  host: process.env.POSTGRESQL_HOST,
+  port: parseInt(process.env.POSTGRESQL_PORT, 10),
+  user: process.env.POSTGRESQL_USER,
+  password: process.env.POSTGRESQL_PASSWORD,
+  database: process.env.POSTGRESQL_DATABASE,
 });
 
 // Create connection pools for both databases
