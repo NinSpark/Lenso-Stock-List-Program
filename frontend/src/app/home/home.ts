@@ -80,7 +80,6 @@ export class Home implements OnInit {
   ];
 
   pcdList: any[] = [];
-
   private _sort!: MatSort;
 
   @ViewChild(MatSort)
@@ -134,7 +133,7 @@ export class Home implements OnInit {
         debounceTime(600)
       )
       .subscribe((searchValue) => {
-        this.applyFilter();
+        this.applyFilter(false);
       });
   }
 
@@ -263,7 +262,7 @@ export class Home implements OnInit {
     this.showOOS = false;
     this.searchRimText = '';
 
-    this.applyFilter();
+    this.applyFilter(true);
   }
 
   clearList(): void {
@@ -289,7 +288,9 @@ export class Home implements OnInit {
   }
 
   isSelected(item: LensoItem): boolean {
-    return this.selectedItems.includes(item);
+    return this.selectedItems.some(
+      selected => selected.ItemCode === item.ItemCode
+    );
   }
 
   async fetchPriceAndWeight(): Promise<void> {
@@ -418,7 +419,7 @@ export class Home implements OnInit {
     }
   }
 
-  async applyFilter() {
+  async applyFilter(resetList: boolean) {
     // this.isLoading = true;
     this.isInitial = false;
     this.setLoading(true);
@@ -431,7 +432,7 @@ export class Home implements OnInit {
     let selectedType: string = this.selectedType;
     let search: string = this.searchRimText.trim() || '';
 
-    this.selectedItems = [];
+    if (resetList) this.selectedItems = [];
     const pcdIndex = selectedPCDs.indexOf("all-pcd");
     const sizeIndex = selectedSizes.indexOf("all-size");
 

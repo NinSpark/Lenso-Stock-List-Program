@@ -18,7 +18,7 @@
             <input matInput placeholder="e.g. V1N" [(ngModel)]="searchRimText" (ngModelChange)="onSearchChange($event)"
                 [ngModelOptions]="{updateOn: 'change'}" #searchbar>
             <button *ngIf="searchRimText" matSuffix mat-icon-button aria-label="Clear"
-                (click)="searchRimText = ''; applyFilter()">
+                (click)="searchRimText = ''; applyFilter(false)">
                 <mat-icon>close</mat-icon>
             </button>
         </mat-form-field>
@@ -82,7 +82,7 @@
             <mat-icon [matBadge]="selectedItems.length">more_vert</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-            <button *ngIf="fullItemList.data.length == 0" mat-menu-item (click)="applyFilter()" [disabled]="isLoading">
+            <button *ngIf="fullItemList.data.length == 0" mat-menu-item (click)="applyFilter(false)" [disabled]="isLoading">
                 <mat-icon>visibility</mat-icon>
                 <span>Show All</span>
             </button>
@@ -166,7 +166,7 @@
                     </mat-form-field>
                 </div>
 
-                <button matButton="filled" color="primary" (click)="applyFilter(); filterPanel.close()"
+                <button matButton="filled" color="primary" (click)="applyFilter(false); filterPanel.close()"
                     style="margin-top: 8px;"
                     [disabled]="selectedPCD.value!.length == 0 || selectedSize.value!.length == 0 || isLoading">
                     Apply
