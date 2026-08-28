@@ -12,6 +12,11 @@
   align-items: center;
 }
 
+.welcome-div {
+  font-size: 12px;
+  color: #595959;
+}
+
 img.fallback {
   pointer-events: none;
   user-select: none;

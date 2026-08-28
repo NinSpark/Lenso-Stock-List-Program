@@ -15,6 +15,7 @@ const allowedOrigins = [
   'http://localhost:4200', // dev
   'https://mcq5cp7n-4202.asse.devtunnels.ms', // production
   'https://hbctrlpd-4200.asse.devtunnels.ms', // production
+  'http://192.168.0.167:4200', // dev
 ];
 
 app.use(express.static(path.join(__dirname, 'dist/frontend')));

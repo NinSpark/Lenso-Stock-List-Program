@@ -68,6 +68,7 @@ export class Home implements OnInit {
 
   loadingMap: { [itemCode: string]: boolean } = {};
   selectedItems: LensoItem[] = [];
+  username: string = "";
 
   sizeList: any[] = [
     { name: '15"', value: '15' },
@@ -124,6 +125,7 @@ export class Home implements OnInit {
       this.hidePriceOption = true;
     }
 
+    this.username = this.authService.getLoggedInUser() || '';
     this.getPCDList();
     this.isLoadingShare = false;
     this.shareMsg = "";
