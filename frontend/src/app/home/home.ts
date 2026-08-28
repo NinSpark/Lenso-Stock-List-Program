@@ -34,8 +34,8 @@ import { Router } from '@angular/router';
 })
 export class Home implements OnInit {
   // backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
-  // backendLink = "https://mcq5cp7n-3002.asse.devtunnels.ms";
-  backendLink = "http://localhost:3000";
+  backendLink = "https://mcq5cp7n-3002.asse.devtunnels.ms";
+  // backendLink = "http://localhost:3000";
 
   isLoading: boolean = false;
   isLoadingShare: boolean = false;
