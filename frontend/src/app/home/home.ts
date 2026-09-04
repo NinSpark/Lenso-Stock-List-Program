@@ -2,11 +2,9 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild, PLATFORM_ID, Inject, E
 import { isPlatformBrowser } from '@angular/common';
 import { FormControl } from '@angular/forms';
 import { StockService } from '../../services/stock.service';
-import { LensoStock } from '../models/lenso_stock';
 import { LensoItem } from '../models/lenso_item';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { LensoPrice } from '../models/lenso_price';
 import jsPDF from 'jspdf';
 import { MaterialModule } from '../shared/material.module';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -33,7 +31,6 @@ import { Router } from '@angular/router';
   ]
 })
 export class Home implements OnInit {
-  // backendLink = "https://98j88mtl-3000.asse.devtunnels.ms";
   backendLink = "https://mcq5cp7n-3002.asse.devtunnels.ms";
   // backendLink = "http://localhost:3000";
 
@@ -295,62 +292,6 @@ export class Home implements OnInit {
     );
   }
 
-  async fetchPriceAndWeight(): Promise<void> {
-    this.stockService.getPriceList(this.isLensoDB).subscribe({
-      next: (data: LensoPrice[]) => {
-        const priceMap = new Map(
-          data.map(price => [price.ItemCode, price])
-        );
-
-        this.fullItemList.data.forEach((item: LensoItem) => {
-          const itemPrice = priceMap.get(item.ItemCode);
-
-          item.Price = itemPrice?.Price ?? -1;
-          item.Weight = itemPrice?.Weight ?? -1;
-        });
-
-        this.fetchStocks();
-      },
-      error: (err) => {
-        console.error('Error fetching prices:', err);
-      }
-    });
-  }
-
-  async fetchStocks(): Promise<void> {
-    try {
-      this.stockService.getStockList(this.isLensoDB).subscribe((data: LensoStock[]) => {
-        let fullStockList: LensoStock[] = data;
-        const stockMap = new Map<string, { qty: number }>();
-
-        fullStockList.forEach(stock => {
-          const existing = stockMap.get(stock.ItemCode);
-
-          if (existing) {
-            existing.qty += stock.Qty;
-          } else {
-            stockMap.set(stock.ItemCode, {
-              qty: stock.Qty
-            });
-          }
-        });
-
-        this.fullItemList.data.forEach((item: LensoItem) => {
-          const stock = stockMap.get(item.ItemCode);
-
-          item.StockQty = stock?.qty ?? 0;
-        });
-
-        this.applySort();
-        this.fullStockCount = this.inStockCount();
-        this.emptyStockCount = this.fullItemList.data.length - this.fullStockCount;
-        this.isStockCountReady = true;
-      });
-    } catch (error) {
-      console.error('Error fetching stocks:', error);
-    }
-  }
-
   initializeFilter() {
     this.selectedSize.setValue(['all-size', ...this.sizeList.map(size => size.value)]);
     this.selectedPCD.setValue(['all-pcd', ...this.pcdList.map(pcd => pcd.value)]);
@@ -450,7 +391,6 @@ export class Home implements OnInit {
       .subscribe({
         next: (data: LensoItem[]) => {
           this.fullItemList.data = data;
-          // this.fetchPriceAndWeight();
           // console.log(this.fullItemList.data);
 
           this.applySort();

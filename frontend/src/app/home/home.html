@@ -101,10 +101,6 @@
                 <span>Share PDF</span>
             </button>
             <button mat-menu-item (click)="selectAll()" [disabled]="isLoading">
-                <!-- <mat-icon *ngIf="selectedItems.length == 0">playlist_add_check</mat-icon>
-                <span *ngIf="selectedItems.length == 0">Select All</span>
-                <mat-icon *ngIf="selectedItems.length > 0">playlist_remove</mat-icon>
-                <span *ngIf="selectedItems.length > 0">Deselect All</span> -->
                 <ng-container>
                     @if (selectedItems.length == 0) {
                     <mat-icon>playlist_add_check</mat-icon>
